@@ -1,0 +1,33 @@
+{
+  "$schema": "https://firebase.google.com/schemas/blueprint/v1",
+  "collections": [
+    {
+      "name": "users",
+      "description": "Perfis de usuários do Base Visual da Musculação",
+      "documentId": "{userId}",
+      "fields": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "Email do usuário" },
+        "name": { "type": "string", "description": "Nome de exibição" },
+        "photoURL": { "type": "string", "description": "Foto de perfil do Google" },
+        "createdAt": { "type": "timestamp", "description": "Data de criação" },
+        "lastLoginAt": { "type": "timestamp", "description": "Data do último login" },
+        "active": { "type": "boolean", "description": "Status ativo do usuário" }
+      }
+    },
+    {
+      "name": "user_access",
+      "description": "Permissões de acesso aos módulos por usuário",
+      "documentId": "{accessId}",
+      "fields": {
+        "userId": { "type": "string", "description": "Firebase Auth UID do usuário" },
+        "email": { "type": "string", "description": "Email do usuário" },
+        "moduleId": { "type": "string", "description": "Identificador do módulo (BASE, TREINOS30, PACK48, PROGRAMA8, TREINOSDIA, NUTRICAO)" },
+        "active": { "type": "boolean", "description": "Status ativo da permissão" },
+        "createdAt": { "type": "timestamp", "description": "Data de concessão" },
+        "source": { "type": "string", "description": "Origem da concessão (ex: manual, yampi, admin_dev)" }
+      }
+    }
+  ]
+}
+

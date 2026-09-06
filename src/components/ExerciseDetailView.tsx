@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+import { ArrowLeft, Dumbbell, PlayCircle, FileText, ExternalLink, Sparkles, Lock, ShieldAlert, ChevronUp } from 'lucide-react';
+import { Exercise } from '../types';
+
+interface ExerciseDetailViewProps {
+  exercise: Exercise;
+  hasBaseAccess: boolean;
+  onBack: () => void;
+  onOpenVideo?: (exercise: Exercise) => void;
+  onOpenMaterialRef: (exercise: Exercise) => void;
+}
+
+export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
+  exercise,
+  hasBaseAccess,
+  onBack,
+  onOpenVideo,
+  onOpenMaterialRef,
+}) => {
+  const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
+  return (
+    <div id="exercise-detail-view" className="space-y-4 pb-12 animate-in fade-in duration-200">
+      {/* Back button and title */}
+      <div>
+        <button
+          id="btn-back-exercise"
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-white text-[11px] font-bold uppercase tracking-wider py-1 mb-2 transition-colors"
+        >
+          <ArrowLeft size={14} />
+          <span>Voltar para Exercícios</span>
+        </button>
+
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-white uppercase leading-tight">
+            {exercise.name}
+          </h1>
+
+          {!hasBaseAccess && (
+            <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shrink-0 mt-1">
+              <ShieldAlert size={12} />
+              <span>BASE Bloqueado</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Metadata card */}
+      <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 flex items-center gap-3.5 shadow-md">
+        <div className="w-10 h-10 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-zinc-400 shrink-0">
+          <Dumbbell size={18} />
+        </div>
+        <div className="space-y-0.5">
+          <span className="text-[10px] font-bold tracking-wider text-[#CC0000] uppercase block">
+            {exercise.categoryName}
+          </span>
+          <p className="text-xs text-zinc-300">
+            Registro {exercise.id} · Página {exercise.pageNumber}
+          </p>
+        </div>
+      </div>
+
+      {/* Video Demonstration Card */}
+      {exercise.hasVideo && (
+        <div
+          id="card-video-demonstration"
+          className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3.5 shadow-md"
+        >
+          <div className="flex items-start gap-3">
+            <div className={`w-10 h-10 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center shrink-0 mt-0.5 ${hasBaseAccess ? 'text-[#CC0000]' : 'text-zinc-600'}`}>
+              {hasBaseAccess ? <PlayCircle size={20} /> : <Lock size={18} />}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                  {hasBaseAccess ? 'Demonstração disponível' : 'Vídeo Demonstrativo'}
+                </h3>
+                {!hasBaseAccess && (
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#120907] text-zinc-500 border border-[#2D2421]">
+                    Bloqueado
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-0.5 font-mono truncate">
+                {hasBaseAccess
+                  ? (exercise.videoFileName || `${exercise.name.toUpperCase().replace(/\s+/g, '_')}.mp4`)
+                  : 'Arquivo protegido · Requer Módulo BASE'}
+              </p>
+            </div>
+          </div>
+
+          {hasBaseAccess ? (
+            <div className="space-y-3">
+              <button
+                id="btn-ver-demonstracao"
+                onClick={() => setIsVideoExpanded(!isVideoExpanded)}
+                className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-widest py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40"
+              >
+                <span>{isVideoExpanded ? 'Recolher demonstração' : 'Ver demonstração'}</span>
+                {isVideoExpanded ? <ChevronUp size={15} /> : <PlayCircle size={15} />}
+              </button>
+
+              {isVideoExpanded && exercise.videoUrl && (
+                <div
+                  id="inline-video-container"
+                  className="w-full rounded-xl overflow-hidden bg-black border border-[#2D2421] shadow-lg animate-in fade-in duration-200"
+                >
+                  <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+                    <iframe
+                      id="inline-exercise-video-iframe"
+                      src={exercise.videoUrl.replace(/\/view(\?.*)?$/, '/preview')}
+                      title={exercise.name}
+                      className="w-full h-full border-0"
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                    />
+                  </div>
+                  <div className="p-2.5 bg-[#120907] border-t border-[#2D2421] flex items-center justify-between text-[10px] text-zinc-400">
+                    <span className="font-mono text-[10px] text-zinc-400 truncate max-w-[200px]">
+                      {exercise.videoFileName || `${exercise.name.toUpperCase().replace(/\s+/g, '_')}.mp4`}
+                    </span>
+                    <a
+                      id="btn-open-drive-video-inline"
+                      href={exercise.videoUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-zinc-400 hover:text-white flex items-center gap-1 font-bold uppercase tracking-wider transition-colors ml-auto"
+                    >
+                      <span>Abrir no Drive</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              id="btn-ver-demonstracao-locked"
+              onClick={() => onOpenVideo && onOpenVideo(exercise)}
+              className="w-full bg-[#120907] hover:bg-[#1c1210] border border-red-500/20 text-zinc-400 hover:text-red-400 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            >
+              <Lock size={14} className="text-[#CC0000]" />
+              <span>Vídeo Bloqueado · Liberar Módulo BASE</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Referência na Base Visual card */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-0.5">
+          <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+            Referência na Base Visual
+          </label>
+          {!hasBaseAccess && (
+            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">
+              Bloqueado
+            </span>
+          )}
+        </div>
+
+        <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3 shadow-md">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-zinc-400 shrink-0 mt-0.5">
+              {hasBaseAccess ? <FileText size={18} /> : <Lock size={18} className="text-zinc-600" />}
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                Base Visual da Musculação
+              </h3>
+              <p className="text-[11px] text-zinc-500 mt-0.5">
+                Página {exercise.pageNumber} · Módulo {exercise.moduleId}
+              </p>
+            </div>
+          </div>
+
+          {hasBaseAccess ? (
+            <button
+              id="btn-abrir-base-visual"
+              onClick={() => onOpenMaterialRef(exercise)}
+              className="w-full bg-[#120907] hover:bg-[#201715] border border-[#2D2421] hover:border-[#CC0000]/60 text-zinc-300 hover:text-white font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            >
+              <span>Abrir na Base Visual</span>
+              <ExternalLink size={14} />
+            </button>
+          ) : (
+            <button
+              id="btn-abrir-base-visual-locked"
+              onClick={() => onOpenMaterialRef(exercise)}
+              className="w-full bg-[#120907] hover:bg-[#1a1210] border border-[#2D2421] text-zinc-500 hover:text-zinc-400 font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            >
+              <Lock size={13} />
+              <span>Material Bloqueado</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Execution notes if present */}
+      {exercise.notes && (
+        <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-1.5 shadow-md">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-500">
+            <Sparkles size={14} />
+            <span>Ponto de atenção postural</span>
+          </div>
+          <p className="text-xs text-zinc-300 leading-relaxed">
+            {exercise.notes}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};

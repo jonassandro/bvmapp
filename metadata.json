@@ -1,0 +1,6 @@
+{
+  "name": "Base Visual da Musculação",
+  "description": "Plataforma digital organizada para consulta rápida de exercícios e acesso a conteúdos complementares da musculação.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
