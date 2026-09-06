@@ -20,6 +20,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
   onUnlockContent,
 }) => {
   const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
+
   return (
     <div id="exercise-detail-view" className="space-y-4 pb-12 animate-in fade-in duration-200">
       {/* Back button and title */}
@@ -27,19 +28,19 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
         <button
           id="btn-back-exercise"
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-white text-[11px] font-bold uppercase tracking-wider py-1 mb-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-white text-[11px] font-bold uppercase tracking-wider py-1.5 mb-2 transition-colors cursor-pointer"
         >
           <ArrowLeft size={14} />
           <span>Voltar para Exercícios</span>
         </button>
 
         <div className="flex items-start justify-between gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-white uppercase leading-tight">
+          <h1 className="text-xl font-extrabold tracking-tight text-white uppercase leading-tight">
             {exercise.name}
           </h1>
 
           {!hasBaseAccess && (
-            <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shrink-0 mt-1">
+            <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 mt-1">
               <ShieldAlert size={12} />
               <span>BASE Bloqueado</span>
             </span>
@@ -48,12 +49,12 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
       </div>
 
       {/* Metadata card */}
-      <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 flex items-center gap-3.5 shadow-md">
-        <div className="w-10 h-10 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-zinc-400 shrink-0">
+      <div className="bg-[#111116] border border-[#23232d] rounded-2xl p-4 flex items-center gap-3.5 shadow-xl">
+        <div className="w-10 h-10 rounded-xl bg-[#161622] border border-[#262634] flex items-center justify-center text-[#e50914] shrink-0">
           <Dumbbell size={18} />
         </div>
-        <div className="space-y-0.5">
-          <span className="text-[10px] font-bold tracking-wider text-[#CC0000] uppercase block">
+        <div className="space-y-0.5 min-w-0">
+          <span className="text-[10px] font-bold tracking-wider text-[#e50914] uppercase block">
             {exercise.categoryName}
           </span>
           <p className="text-xs text-zinc-300">
@@ -66,11 +67,11 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
       {exercise.hasVideo && (
         <div
           id="card-video-demonstration"
-          className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3.5 shadow-md"
+          className="bg-[#111116] border border-[#23232d] rounded-2xl p-4.5 space-y-3.5 shadow-xl"
         >
           <div className="flex items-start gap-3">
-            <div className={`w-10 h-10 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center shrink-0 mt-0.5 ${hasBaseAccess ? 'text-[#CC0000]' : 'text-zinc-600'}`}>
-              {hasBaseAccess ? <PlayCircle size={20} /> : <Lock size={18} />}
+            <div className={`w-10 h-10 rounded-xl bg-[#161622] border border-[#262634] flex items-center justify-center shrink-0 mt-0.5 ${hasBaseAccess ? 'text-[#e50914]' : 'text-zinc-600'}`}>
+              {hasBaseAccess ? <PlayCircle size={22} /> : <Lock size={18} />}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -78,12 +79,12 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
                   {hasBaseAccess ? 'Demonstração disponível' : 'Vídeo Demonstrativo'}
                 </h3>
                 {!hasBaseAccess && (
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#120907] text-zinc-500 border border-[#2D2421]">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-400 border border-zinc-800">
                     Bloqueado
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-zinc-500 mt-0.5 font-mono truncate">
+              <p className="text-[10px] text-zinc-400 mt-0.5 font-mono truncate">
                 {hasBaseAccess
                   ? (exercise.videoFileName || `${exercise.name.toUpperCase().replace(/\s+/g, '_')}.mp4`)
                   : 'Arquivo protegido · Requer Módulo BASE'}
@@ -96,16 +97,16 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
               <button
                 id="btn-ver-demonstracao"
                 onClick={() => setIsVideoExpanded(!isVideoExpanded)}
-                className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-widest py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40"
+                className="w-full bg-[#e50914] hover:bg-red-600 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-widest py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 cursor-pointer"
               >
-                <span>{isVideoExpanded ? 'Recolher demonstração' : 'Ver demonstração'}</span>
+                <span>{isVideoExpanded ? 'Recolher demonstração' : 'Ver demonstração em vídeo'}</span>
                 {isVideoExpanded ? <ChevronUp size={15} /> : <PlayCircle size={15} />}
               </button>
 
               {isVideoExpanded && exercise.videoUrl && (
                 <div
                   id="inline-video-container"
-                  className="w-full rounded-xl overflow-hidden bg-black border border-[#2D2421] shadow-lg animate-in fade-in duration-200"
+                  className="w-full rounded-xl overflow-hidden bg-black border border-[#262634] shadow-lg animate-in fade-in duration-200"
                 >
                   <div className="relative w-full aspect-video bg-black flex items-center justify-center">
                     <iframe
@@ -117,7 +118,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
                       allowFullScreen
                     />
                   </div>
-                  <div className="p-2.5 bg-[#120907] border-t border-[#2D2421] flex items-center justify-between text-[10px] text-zinc-400">
+                  <div className="p-3 bg-[#0d0d12] border-t border-[#23232d] flex items-center justify-between text-[10px] text-zinc-400">
                     <span className="font-mono text-[10px] text-zinc-400 truncate max-w-[200px]">
                       {exercise.videoFileName || `${exercise.name.toUpperCase().replace(/\s+/g, '_')}.mp4`}
                     </span>
@@ -139,9 +140,9 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
             <button
               id="btn-ver-demonstracao-locked"
               onClick={() => onUnlockContent && onUnlockContent(exercise)}
-              className="w-full bg-[#120907] hover:bg-[#1c1210] border border-red-500/20 text-zinc-400 hover:text-red-400 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              className="w-full bg-[#16161f] hover:bg-[#1f1f2a] border border-red-500/20 text-zinc-300 hover:text-red-400 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
-              <Lock size={14} className="text-[#CC0000]" />
+              <Lock size={14} className="text-[#e50914]" />
               <span>Vídeo Bloqueado · Desbloquear Conteúdo</span>
             </button>
           )}
@@ -151,7 +152,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
       {/* Referência na Base Visual card */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-0.5">
-          <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+          <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
             Referência na Base Visual
           </label>
           {!hasBaseAccess && (
@@ -161,16 +162,16 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
           )}
         </div>
 
-        <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3 shadow-md">
+        <div className="bg-[#111116] border border-[#23232d] rounded-2xl p-4 space-y-3 shadow-xl">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-zinc-400 shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-xl bg-[#161622] border border-[#262634] flex items-center justify-center text-zinc-400 shrink-0 mt-0.5">
               {hasBaseAccess ? <FileText size={18} /> : <Lock size={18} className="text-zinc-600" />}
             </div>
             <div>
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                 Base Visual da Musculação
               </h3>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
+              <p className="text-[11px] text-zinc-400 mt-0.5">
                 Página {exercise.pageNumber} · Módulo {exercise.moduleId}
               </p>
             </div>
@@ -180,7 +181,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
             <button
               id="btn-abrir-base-visual"
               onClick={() => onOpenMaterialRef(exercise)}
-              className="w-full bg-[#120907] hover:bg-[#201715] border border-[#2D2421] hover:border-[#CC0000]/60 text-zinc-300 hover:text-white font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full bg-[#161620] hover:bg-[#1e1e2c] border border-[#262634] hover:border-[#e50914]/60 text-zinc-200 hover:text-white font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <span>Abrir na Base Visual</span>
               <ExternalLink size={14} />
@@ -189,7 +190,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
             <button
               id="btn-abrir-base-visual-locked"
               onClick={() => onUnlockContent ? onUnlockContent(exercise) : onOpenMaterialRef(exercise)}
-              className="w-full bg-[#120907] hover:bg-[#1a1210] border border-[#2D2421] text-zinc-500 hover:text-zinc-400 font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full bg-[#161620] hover:bg-[#1f1f2a] border border-[#262634] text-zinc-400 hover:text-zinc-300 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <Lock size={13} />
               <span>Material Bloqueado · Desbloquear</span>
@@ -200,8 +201,8 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
 
       {/* Execution notes if present */}
       {exercise.notes && (
-        <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-1.5 shadow-md">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-500">
+        <div className="bg-[#111116] border border-[#23232d] rounded-2xl p-4 space-y-1.5 shadow-xl">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
             <Sparkles size={14} />
             <span>Ponto de atenção postural</span>
           </div>

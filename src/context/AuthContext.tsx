@@ -45,6 +45,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [emailLinkSentTo, setEmailLinkSentTo] = useState<string | null>(null);
   const [isEmailLinkPending, setIsEmailLinkPending] = useState(false);
 
+  // Clear any residual test bypass flag on startup
+  useEffect(() => {
+    try {
+      window.sessionStorage.removeItem('TEST_BYPASS_ALL');
+    } catch {}
+  }, []);
+
 
   // Check if incoming URL is a Firebase email sign-in link
   useEffect(() => {
@@ -80,8 +87,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       // Zero out accesses immediately on any auth state transition
       setUserAccesses([]);
-      setFirebaseUser(currentUser);
       if (currentUser) {
+        setFirebaseUser(currentUser);
         try {
           const profile = await syncUserProfile(currentUser);
           setUserProfile(profile);
@@ -98,6 +105,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } else {
         setUserProfile(null);
+        setFirebaseUser(null);
         setUserAccesses([]);
       }
       setLoading(false);

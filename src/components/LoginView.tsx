@@ -108,25 +108,20 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#EAEAEA] flex justify-center font-sans antialiased">
+    <div className="min-h-screen bg-[#08080a] text-[#ededf0] flex justify-center font-sans antialiased">
       <main
         id="login-container"
-        className="w-full max-w-md min-h-screen bg-[#120907] shadow-2xl relative flex flex-col justify-between border-x border-[#2D2421] p-5 sm:p-6"
+        className="w-full max-w-md min-h-screen bg-[#0c0c10] shadow-2xl relative flex flex-col justify-between border-x border-[#1e1e28] p-5 sm:p-6"
       >
         {/* Top Brand Header */}
         <div className="space-y-5 pt-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-[#CC0000] rounded-xl flex items-center justify-center font-extrabold text-white text-lg shadow-md shadow-red-950/50">
-              B
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block">
-                Plataforma Digital
-              </span>
-              <h1 className="text-sm font-bold tracking-tight uppercase text-white">
-                Base Visual <span className="text-[#CC0000]">da Musculação</span>
-              </h1>
-            </div>
+          <div>
+            <span className="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block">
+              Plataforma Digital
+            </span>
+            <h1 className="text-sm font-bold tracking-tight uppercase text-white">
+              Base Visual <span className="text-[#e50914]">da Musculação</span>
+            </h1>
           </div>
 
           <div className="space-y-1.5">
@@ -139,9 +134,9 @@ export const LoginView: React.FC = () => {
           </div>
 
           {/* Quick value props list */}
-          <div className="bg-[#1A1412] border border-[#2D2421] rounded-2xl p-3.5 space-y-2.5 shadow-md">
+          <div className="bg-[#13131a] border border-[#1e1e28] rounded-2xl p-3.5 space-y-2.5 shadow-md">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-[#CC0000] shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#0c0c10] border border-[#23232d] flex items-center justify-center text-[#e50914] shrink-0">
                 <Dumbbell size={16} />
               </div>
               <div className="min-w-0">
@@ -151,7 +146,7 @@ export const LoginView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-[#CC0000] shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#0c0c10] border border-[#23232d] flex items-center justify-center text-[#e50914] shrink-0">
                 <PlayCircle size={16} />
               </div>
               <div className="min-w-0">
@@ -161,7 +156,7 @@ export const LoginView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center text-[#CC0000] shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#0c0c10] border border-[#23232d] flex items-center justify-center text-[#e50914] shrink-0">
                 <BookOpen size={16} />
               </div>
               <div className="min-w-0">
@@ -203,11 +198,11 @@ export const LoginView: React.FC = () => {
           {isEmailLinkPending ? (
             <div
               id="confirm-email-link-card"
-              className="bg-[#1A1412] border border-[#2D2421] rounded-2xl p-4 space-y-3.5 shadow-md animate-in fade-in"
+              className="bg-[#13131a] border border-[#1e1e28] rounded-2xl p-4 space-y-3.5 shadow-md animate-in fade-in"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wider">
-                  <Mail size={16} className="text-[#CC0000]" />
+                  <Mail size={16} className="text-[#e50914]" />
                   <span>Concluir acesso por link</span>
                 </div>
                 <p className="text-[11px] text-zinc-400 leading-relaxed">
@@ -230,7 +225,7 @@ export const LoginView: React.FC = () => {
                     onChange={(e) => setConfirmEmail(e.target.value)}
                     placeholder="seu@email.com"
                     autoComplete="email"
-                    className="w-full bg-[#120907] border border-[#2D2421] focus:border-[#CC0000] focus:ring-1 focus:ring-[#CC0000] text-white text-xs rounded-xl px-3.5 py-3 outline-none transition-colors placeholder:text-zinc-600"
+                    className="w-full bg-[#0c0c10] border border-[#23232d] focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914] text-white text-xs rounded-xl px-3.5 py-3 outline-none transition-colors placeholder:text-zinc-600"
                   />
                 </div>
 
@@ -238,7 +233,7 @@ export const LoginView: React.FC = () => {
                   id="btn-confirm-access-link"
                   type="submit"
                   disabled={isConfirmingLink}
-                  className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-[#e50914] hover:bg-[#b80710] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isConfirmingLink ? (
                     <>
@@ -258,7 +253,7 @@ export const LoginView: React.FC = () => {
             /* Link Sent Confirmation State */
             <div
               id="link-sent-confirmation-card"
-              className="bg-[#1A1412] border border-green-500/30 rounded-2xl p-4 space-y-3.5 shadow-md animate-in fade-in"
+              className="bg-[#13131a] border border-green-500/30 rounded-2xl p-4 space-y-3.5 shadow-md animate-in fade-in"
             >
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 shrink-0 mt-0.5">
@@ -275,7 +270,7 @@ export const LoginView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-[#120907] p-3 rounded-xl border border-[#2D2421] text-[11px] text-zinc-400 leading-relaxed space-y-1">
+              <div className="bg-[#0c0c10] p-3 rounded-xl border border-[#23232d] text-[11px] text-zinc-400 leading-relaxed space-y-1">
                 <p className="text-zinc-300 font-semibold">Como acessar:</p>
                 <ol className="list-decimal list-inside space-y-0.5 text-zinc-400">
                   <li>Abra o aplicativo de e-mail no seu celular ou computador;</li>
@@ -289,7 +284,7 @@ export const LoginView: React.FC = () => {
                   id="btn-resend-link"
                   onClick={() => handleSendLink({ preventDefault: () => {} } as any)}
                   disabled={isSendingLink}
-                  className="flex-1 bg-[#120907] hover:bg-[#1f1513] border border-[#2D2421] text-zinc-300 text-[11px] font-bold uppercase tracking-wider py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60"
+                  className="flex-1 bg-[#0c0c10] hover:bg-[#1a1a24] border border-[#23232d] text-zinc-300 text-[11px] font-bold uppercase tracking-wider py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
                 >
                   <RefreshCw size={12} className={isSendingLink ? 'animate-spin' : ''} />
                   <span>{isSendingLink ? 'Reenviando...' : 'Reenviar link'}</span>
@@ -298,7 +293,7 @@ export const LoginView: React.FC = () => {
                 <button
                   id="btn-use-other-email"
                   onClick={resetLinkSent}
-                  className="flex-1 bg-[#120907] hover:bg-[#1f1513] border border-[#2D2421] text-zinc-400 text-[11px] font-bold uppercase tracking-wider py-2.5 px-3 rounded-xl transition-colors"
+                  className="flex-1 bg-[#0c0c10] hover:bg-[#1a1a24] border border-[#23232d] text-zinc-400 text-[11px] font-bold uppercase tracking-wider py-2.5 px-3 rounded-xl transition-colors cursor-pointer"
                 >
                   Usar outro e-mail
                 </button>
@@ -326,7 +321,7 @@ export const LoginView: React.FC = () => {
                     placeholder="seu@email.com"
                     autoComplete="email"
                     disabled={isSendingLink}
-                    className="w-full bg-[#1A1412] border border-[#2D2421] focus:border-[#CC0000] focus:ring-1 focus:ring-[#CC0000] text-white text-xs rounded-xl pl-10 pr-3.5 py-3.5 outline-none transition-colors placeholder:text-zinc-600 disabled:opacity-60"
+                    className="w-full bg-[#13131a] border border-[#23232d] focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914] text-white text-xs rounded-xl pl-10 pr-3.5 py-3.5 outline-none transition-colors placeholder:text-zinc-600 disabled:opacity-60"
                   />
                 </div>
                 <p className="text-[10px] text-zinc-500">
@@ -338,7 +333,7 @@ export const LoginView: React.FC = () => {
                 id="btn-send-access-link"
                 type="submit"
                 disabled={isSendingLink}
-                className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-[#e50914] hover:bg-[#b80710] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSendingLink ? (
                   <>
@@ -357,11 +352,11 @@ export const LoginView: React.FC = () => {
 
           {/* Divider */}
           <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-[#2D2421]"></div>
+            <div className="flex-grow border-t border-[#1e1e28]"></div>
             <span className="flex-shrink mx-3 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
               ou continue com
             </span>
-            <div className="flex-grow border-t border-[#2D2421]"></div>
+            <div className="flex-grow border-t border-[#1e1e28]"></div>
           </div>
 
           {/* Secondary Google Login Button */}
@@ -369,7 +364,7 @@ export const LoginView: React.FC = () => {
             id="btn-login-google"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading || isSendingLink}
-            className="w-full bg-[#1A1412] hover:bg-[#251b18] active:scale-[0.99] border border-[#2D2421] text-zinc-200 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-[#13131a] hover:bg-[#1a1a24] active:scale-[0.99] border border-[#23232d] text-zinc-200 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
             {isGoogleLoading ? (
               <>

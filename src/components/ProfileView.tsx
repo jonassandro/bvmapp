@@ -11,8 +11,11 @@ import {
   ChevronRight,
   FileSpreadsheet,
   Image as ImageIcon,
+  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import { UserProfile, Material } from '../types';
+import { getMaterialMeta } from '../data/contentCovers';
 
 interface ProfileViewProps {
   user: UserProfile;
@@ -55,6 +58,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   });
 
   const hasBaseAccess = hasAccess('BASE');
+  const allModulesList = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO'];
+  const activeCount = allModulesList.filter((m) => hasAccess(m)).length;
+  const hasAll = activeCount === allModulesList.length;
 
   const handleRefresh = async () => {
     if (!onRefreshAccesses || isRefreshing) return;
@@ -73,9 +79,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const getItemIcon = (material: Material) => {
     const type = material.Tipo || material.type;
-    if (type === 'Planilha') return <FileSpreadsheet size={16} className="text-emerald-400" />;
-    if (type === 'Imagem') return <ImageIcon size={16} className="text-amber-400" />;
-    return <BookOpen size={16} className="text-zinc-400" />;
+    if (type === 'Planilha') return <FileSpreadsheet size={15} className="text-emerald-400" />;
+    if (type === 'Imagem') return <ImageIcon size={15} className="text-amber-400" />;
+    return <BookOpen size={15} className="text-zinc-400" />;
   };
 
   return (
@@ -86,66 +92,77 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* User Information Card */}
-      <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 flex items-center gap-3.5 shadow-md">
+      <div className="bg-[#0f0f14] border border-[#23232d] rounded-2xl p-4.5 flex items-center gap-3.5 shadow-xl">
         {user.photoURL ? (
           <img
             id="profile-user-avatar"
             src={user.photoURL}
             alt={user.name}
             referrerPolicy="no-referrer"
-            className="w-12 h-12 rounded-full object-cover border border-[#2D2421] shrink-0"
+            className="w-13 h-13 rounded-full object-cover border-2 border-red-500/30 shrink-0 shadow-md"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-zinc-800 border border-[#2D2421] flex items-center justify-center text-white font-bold text-sm shrink-0">
-            {user.initials || <UserIcon size={18} />}
+          <div className="w-13 h-13 rounded-full bg-gradient-to-br from-[#1c1c28] to-[#121218] border border-[#2e2e3e] flex items-center justify-center text-white font-extrabold text-sm shrink-0 shadow-md">
+            {user.initials || <UserIcon size={20} />}
           </div>
         )}
 
         <div className="space-y-1 min-w-0 flex-1">
-          <h2 className="text-sm font-bold text-white uppercase tracking-tight truncate">
-            {user.name}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-white uppercase tracking-tight truncate">
+              {user.name}
+            </h2>
+          </div>
           <p className="text-xs text-zinc-400 truncate">{user.email}</p>
           <div className="pt-0.5">
             <div
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                hasBaseAccess
-                  ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                hasAll
+                  ? 'bg-purple-500/10 border border-purple-500/20 text-purple-400'
+                  : hasBaseAccess
+                  ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
                   : 'bg-red-500/10 border border-red-500/20 text-red-400'
               }`}
             >
               {hasBaseAccess ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
-              <span>{hasBaseAccess ? 'Acesso Ativo' : 'Acesso Pendente'}</span>
+              <span>{hasAll ? 'Acesso Total' : hasBaseAccess ? user.badge || 'Acesso Base Ativo' : 'Acesso Pendente'}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Meus Conteúdos */}
-      <div className="space-y-2">
+      {/* Meus Conteúdos Liberados */}
+      <div className="space-y-2.5">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-            Meus Conteúdos
+          <h2 className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+            Meus Conteúdos Liberados
           </h2>
-          <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
             {myUnlockedMaterials.length} disponíveis
           </span>
         </div>
 
         {myUnlockedMaterials.length > 0 ? (
-          <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl divide-y divide-[#2D2421] overflow-hidden shadow-md">
+          <div className="bg-[#111116] border border-[#23232d] rounded-2xl divide-y divide-[#23232d] overflow-hidden shadow-xl">
             {myUnlockedMaterials.map((material) => {
               const matId = material.ID || material.id;
+              const meta = getMaterialMeta(matId, material.ModuloID || material.moduleId);
+
               return (
                 <div
                   key={matId}
                   id={`my-content-${matId}`}
                   onClick={() => onSelectMaterial(material)}
-                  className="p-3.5 flex items-center justify-between gap-3 hover:bg-[#221a17] transition-colors cursor-pointer"
+                  className="p-3.5 flex items-center justify-between gap-3 hover:bg-[#181822] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center shrink-0">
-                      {getItemIcon(material)}
+                    <div className="relative w-12 h-10 rounded-lg overflow-hidden bg-black/50 border border-[#262634] shrink-0">
+                      <img
+                        src={meta.coverUrl}
+                        alt={material.Titulo || material.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-xs font-bold text-white uppercase truncate">
@@ -158,7 +175,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   </div>
 
                   <div className="shrink-0 flex items-center gap-1.5 text-zinc-400">
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                       Disponível
                     </span>
                     <ChevronRight size={14} className="text-zinc-500" />
@@ -168,7 +185,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             })}
           </div>
         ) : (
-          <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 text-xs text-zinc-400 space-y-1 shadow-md">
+          <div className="bg-[#111116] border border-[#23232d] rounded-2xl p-4 text-xs text-zinc-400 space-y-1 shadow-md">
             <p className="font-semibold text-zinc-300">Nenhum conteúdo liberado no momento</p>
             <p className="text-[11px] text-zinc-500 leading-relaxed">
               Caso tenha acabado de confirmar seu pagamento, toque em "Atualizar acesso" abaixo para sincronizar seus conteúdos.
@@ -179,7 +196,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {/* Ações: Atualizar Acesso e Suporte */}
       <div className="space-y-2.5 pt-1">
-        <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider px-1">
+        <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider px-1">
           Acesso e Suporte
         </label>
 
@@ -189,22 +206,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           type="button"
           disabled={isRefreshing}
           onClick={handleRefresh}
-          className="w-full bg-[#1A1412] hover:bg-[#231b18] active:scale-[0.99] border border-[#2D2421] hover:border-zinc-700 text-zinc-200 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md disabled:opacity-50 cursor-pointer"
+          className="w-full bg-[#111116] hover:bg-[#16161d] active:scale-[0.99] border border-[#23232d] hover:border-zinc-700 text-zinc-200 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md disabled:opacity-50 cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <RefreshCw
               size={16}
-              className={`text-[#CC0000] ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`text-[#e50914] ${isRefreshing ? 'animate-spin' : ''}`}
             />
             <span>{isRefreshing ? 'Atualizando acesso...' : 'Atualizar acesso'}</span>
           </div>
           {refreshSuccess ? (
-            <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider flex items-center gap-1">
+            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
               <CheckCircle2 size={13} />
               <span>Sincronizado</span>
             </span>
           ) : (
-            <span className="text-zinc-500 text-xs font-bold">&gt;</span>
+            <ChevronRight size={14} className="text-zinc-500" />
           )}
         </button>
 
@@ -213,13 +230,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           id="btn-help-support"
           type="button"
           onClick={onOpenHelp}
-          className="w-full bg-[#1A1412] hover:bg-[#231b18] active:scale-[0.99] border border-[#2D2421] hover:border-zinc-700 text-zinc-200 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer"
+          className="w-full bg-[#111116] hover:bg-[#16161d] active:scale-[0.99] border border-[#23232d] hover:border-zinc-700 text-zinc-200 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <HelpCircle size={16} className="text-zinc-400" />
             <span>Ajuda / Suporte</span>
           </div>
-          <span className="text-zinc-500 text-xs font-bold">&gt;</span>
+          <ChevronRight size={14} className="text-zinc-500" />
         </button>
       </div>
 
@@ -230,12 +247,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             id="btn-logout"
             type="button"
             onClick={onLogout}
-            className="w-full bg-[#1A1412] hover:bg-red-500/10 border border-[#2D2421] hover:border-red-500/40 text-zinc-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer"
+            className="w-full bg-[#111116] hover:bg-red-500/10 border border-[#23232d] hover:border-red-500/40 text-zinc-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <LogOut size={16} />
-              <span>Sair</span>
+              <span>Sair da conta</span>
             </div>
+            <ChevronRight size={14} className="text-zinc-600" />
           </button>
         </div>
       )}

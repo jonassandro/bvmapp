@@ -2,17 +2,17 @@
 
 @layer base {
   :root {
-    --color-bg-app: #0D0D0D;
-    --color-bg-surface: #120907;
-    --color-bg-card: #1A1412;
-    --color-border: #2D2421;
-    --color-accent-red: #CC0000;
-    --color-accent-red-hover: #b30000;
+    --color-bg-app: #08080a;
+    --color-bg-surface: #0f0f13;
+    --color-bg-card: #15151c;
+    --color-border: #23232d;
+    --color-accent-red: #e50914;
+    --color-accent-red-hover: #dc2626;
   }
 
   body {
-    background-color: #0D0D0D;
-    color: #EAEAEA;
+    background-color: #08080a;
+    color: #f4f4f5;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
@@ -33,12 +33,12 @@
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #120907;
+  background: #0d0d11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2D2421;
+  background: #23232d;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a3c37;
+  background: #3f3f4e;
 }

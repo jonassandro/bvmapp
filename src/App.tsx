@@ -120,9 +120,9 @@ function AppContent() {
   // Loading state while verifying Firebase session
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0D0D0D] text-[#EAEAEA] flex items-center justify-center font-sans antialiased p-4">
-        <div className="w-full max-w-xs bg-[#120907] border border-[#2D2421] rounded-2xl p-6 text-center space-y-4 shadow-2xl">
-          <div className="w-12 h-12 bg-[#CC0000] rounded-xl flex items-center justify-center font-extrabold text-white text-xl mx-auto shadow-md shadow-red-950/50">
+      <div className="min-h-screen bg-[#08080a] text-[#ededf0] flex items-center justify-center font-sans antialiased p-4">
+        <div className="w-full max-w-xs bg-[#0c0c10] border border-[#1e1e28] rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+          <div className="w-12 h-12 bg-[#e50914] rounded-xl flex items-center justify-center font-extrabold text-white text-xl mx-auto shadow-md shadow-red-950/50">
             B
           </div>
           <div className="space-y-1">
@@ -131,7 +131,7 @@ function AppContent() {
             </h2>
             <p className="text-xs text-zinc-500">Carregando seu acesso...</p>
           </div>
-          <Loader2 size={24} className="animate-spin text-[#CC0000] mx-auto" />
+          <Loader2 size={24} className="animate-spin text-[#e50914] mx-auto" />
         </div>
       </div>
     );
@@ -272,34 +272,34 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#EAEAEA] flex justify-center font-sans antialiased">
+    <div className="min-h-screen bg-[#08080a] text-zinc-100 flex justify-center font-sans antialiased selection:bg-[#e50914] selection:text-white">
       {/* Mobile container centered on desktop */}
       <main
         id="app-container"
-        className="w-full max-w-md min-h-screen bg-[#120907] shadow-2xl relative flex flex-col border-x border-[#2D2421] pb-20"
+        className="w-full max-w-md min-h-screen bg-[#0c0c10] shadow-2xl relative flex flex-col border-x border-[#1e1e28] pb-24"
       >
         {/* Top Header with Brand Identity */}
         <header
           id="app-top-header"
-          className="h-16 flex items-center justify-between px-4 bg-[#120907] border-b border-[#2D2421] sticky top-0 z-30"
+          className="h-16 flex items-center justify-between px-4 bg-[#0c0c10]/95 backdrop-blur-md border-b border-[#1e1e28] sticky top-0 z-30"
         >
           <div
             onClick={() => handleSelectTab('inicio')}
             className="flex items-center gap-2.5 cursor-pointer"
           >
-            <div className="w-8 h-8 bg-[#CC0000] rounded-lg flex items-center justify-center font-extrabold text-white text-base shadow-sm">
+            <div className="w-8 h-8 bg-[#e50914] rounded-xl flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-red-950/50">
               B
             </div>
             <h1 className="text-sm font-bold tracking-tight uppercase text-white">
-              Base Visual <span className="text-[#CC0000]">da Musculação</span>
+              Base Visual <span className="text-[#e50914]">da Musculação</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
             <span
-              className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest hidden xs:inline-flex items-center gap-1 ${
+              className={`text-[9px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-widest hidden xs:inline-flex items-center gap-1 ${
                 hasBase
-                  ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                   : 'bg-red-500/10 border-red-500/20 text-red-400'
               }`}
             >
@@ -310,17 +310,17 @@ function AppContent() {
             <button
               id="top-profile-chip"
               onClick={() => handleSelectTab('perfil')}
-              className="flex items-center gap-1.5 bg-[#1A1412] p-1 px-2.5 rounded-full border border-[#2D2421] hover:border-[#CC0000]/60 transition-colors"
+              className="flex items-center gap-1.5 bg-[#14141c] p-1 px-2.5 rounded-full border border-[#262632] hover:border-[#e50914]/60 transition-colors cursor-pointer"
             >
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
                   alt={user.name}
                   referrerPolicy="no-referrer"
-                  className="w-5 h-5 rounded-full object-cover border border-[#2D2421]"
+                  className="w-5 h-5 rounded-full object-cover border border-[#282836]"
                 />
               ) : (
-                <div className="w-5 h-5 bg-zinc-800 rounded-full flex items-center justify-center text-[9px] font-bold text-white">
+                <div className="w-5 h-5 bg-[#20202c] rounded-full flex items-center justify-center text-[9px] font-bold text-white">
                   {user.initials}
                 </div>
               )}
@@ -341,9 +341,13 @@ function AppContent() {
               totalMaterials={totalMaterials}
               userBadge={user.badge}
               hasBaseAccess={hasBase}
+              materials={MATERIALS}
+              hasAccess={hasAccess}
+              onSelectMaterial={handleOpenMaterial}
               onSearch={handleHomeSearch}
               onSelectCategory={handleHomeCategorySelect}
               onViewAllExercises={handleViewAllExercises}
+              onNavigateTab={handleSelectTab}
             />
           )}
 
