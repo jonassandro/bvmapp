@@ -356,6 +356,7 @@ function AppContent() {
                   onBack={() => setSelectedExercise(null)}
                   onOpenVideo={handleOpenVideo}
                   onOpenMaterialRef={handleOpenMaterialRef}
+                  onUnlockContent={() => handleOpenMaterialRef(selectedExercise)}
                 />
               ) : (
                 <ExercisesView
@@ -448,7 +449,7 @@ function AppContent() {
           onClose={() => setReaderState({ isOpen: false, material: null, exerciseRef: null })}
           material={readerState.material}
           exerciseRef={readerState.exerciseRef}
-          hasAccess={readerState.material ? hasAccess(readerState.material.moduleId) : hasBase}
+          hasAccess={readerState.material ? hasAccess(readerState.material.ModuloID || readerState.material.moduleId) : hasBase}
         />
       </main>
     </div>

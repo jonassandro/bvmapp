@@ -8,6 +8,7 @@ interface ExerciseDetailViewProps {
   onBack: () => void;
   onOpenVideo?: (exercise: Exercise) => void;
   onOpenMaterialRef: (exercise: Exercise) => void;
+  onUnlockContent?: (exercise: Exercise) => void;
 }
 
 export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
@@ -16,6 +17,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
   onBack,
   onOpenVideo,
   onOpenMaterialRef,
+  onUnlockContent,
 }) => {
   const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
   return (
@@ -136,7 +138,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
           ) : (
             <button
               id="btn-ver-demonstracao-locked"
-              onClick={() => onOpenVideo && onOpenVideo(exercise)}
+              onClick={() => onUnlockContent && onUnlockContent(exercise)}
               className="w-full bg-[#120907] hover:bg-[#1c1210] border border-red-500/20 text-zinc-400 hover:text-red-400 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <Lock size={14} className="text-[#CC0000]" />
@@ -186,11 +188,11 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
           ) : (
             <button
               id="btn-abrir-base-visual-locked"
-              onClick={() => onOpenMaterialRef(exercise)}
+              onClick={() => onUnlockContent ? onUnlockContent(exercise) : onOpenMaterialRef(exercise)}
               className="w-full bg-[#120907] hover:bg-[#1a1210] border border-[#2D2421] text-zinc-500 hover:text-zinc-400 font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
             >
               <Lock size={13} />
-              <span>Material Bloqueado</span>
+              <span>Material Bloqueado · Desbloquear</span>
             </button>
           )}
         </div>

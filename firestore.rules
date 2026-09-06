@@ -8,17 +8,13 @@ service cloud.firestore {
 
     // Module access collection:
     // Regular users can ONLY read their own module permissions (by userId or authenticated email).
-    // Development/admin writing allowed for admin email or dev testing mode.
+    // Production lock: Clients CANNOT create, update or delete user_access. Only Firebase Admin SDK (Yampi Webhook) can write.
     match /user_access/{accessId} {
       allow read: if request.auth != null && (
-        resource == null ||
         resource.data.userId == request.auth.uid ||
         (request.auth.token.email != null && resource.data.email == request.auth.token.email)
       );
-      allow write: if request.auth != null && (
-        request.auth.token.email == 'felipelevantese@gmail.com' ||
-        (request.resource.data.userId == request.auth.uid && request.resource.data.source == 'admin_dev')
-      );
+      allow write: if false;
     }
   }
 }

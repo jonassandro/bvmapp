@@ -78,6 +78,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Listen to Firebase auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // Zero out accesses immediately on any auth state transition
+      setUserAccesses([]);
       setFirebaseUser(currentUser);
       if (currentUser) {
         try {
@@ -96,6 +98,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } else {
         setUserProfile(null);
+        setUserAccesses([]);
       }
       setLoading(false);
     });
@@ -105,13 +108,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Listen to Firestore real-time module accesses for current user
   useEffect(() => {
+    // CRITICAL: Immediately clear user accesses on ANY user change or effect rerun
+    setUserAccesses([]);
+
     if (!firebaseUser) {
-      setUserAccesses([]);
       setLoadingAccesses(false);
       return;
     }
 
-    const userEmail = firebaseUser.email || userProfile?.email;
+    const userEmail = (firebaseUser.email || userProfile?.email || '').trim().toLowerCase();
 
     setLoadingAccesses(true);
     const unsubscribe = subscribeUserAccesses(
@@ -123,34 +128,60 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       },
       (err) => {
         console.error('Falha ao carregar acessos do usuário no Firestore:', err);
+        setUserAccesses([]); // Clear accesses on error fail-closed
         setLoadingAccesses(false);
       }
     );
 
-    return () => unsubscribe();
-  }, [firebaseUser, userProfile?.email]);
+    return () => {
+      unsubscribe();
+      setUserAccesses([]); // Cancel subscription and wipe access memory
+    };
+  }, [firebaseUser?.uid, firebaseUser?.email, userProfile?.email]);
 
   /**
-   * Check if user has active permission for a given module
+   * Check if user has active permission for a given module.
+   * STRICT FAIL-SAFE:
+   * - Requires authenticated firebaseUser
+   * - Requires non-empty userAccesses
+   * - Requires active === true
+   * - Confirms record ownership matches current user's UID or verified email
+   * - No demo bypass, no fallback true, no automatic BASE
    */
   const hasAccess = useCallback(
     (moduleId: string): boolean => {
-      if (!userAccesses || userAccesses.length === 0) return false;
-      const target = moduleId.toUpperCase().trim();
+      if (!firebaseUser || !userAccesses || userAccesses.length === 0) return false;
+      const target = (moduleId || '').toUpperCase().trim();
+      if (!target) return false;
+
+      const userUid = firebaseUser.uid;
+      const userEmail = (firebaseUser.email || '').trim().toLowerCase();
+
       return userAccesses.some((acc) => {
-        const currentMod = acc.moduleId.toUpperCase().trim();
-        if (currentMod === target) return acc.active === true;
+        if (!acc || acc.active !== true) return false;
+
+        const recordUid = acc.userId ? String(acc.userId).trim() : null;
+        const recordEmail = acc.email ? String(acc.email).trim().toLowerCase() : null;
+
+        const isOwnedByCurrentUser =
+          (recordUid !== null && recordUid === userUid) ||
+          (recordEmail !== null && userEmail !== '' && recordEmail === userEmail);
+
+        if (!isOwnedByCurrentUser) return false;
+
+        const currentMod = (acc.moduleId || '').toUpperCase().trim();
+        if (currentMod === target) return true;
         // Check aliases for TREINOSDIA and DIASSEMANA
         if (
           (target === 'TREINOSDIA' || target === 'DIASSEMANA') &&
           (currentMod === 'TREINOSDIA' || currentMod === 'DIASSEMANA')
         ) {
-          return acc.active === true;
+          return true;
         }
         return false;
       });
     },
-    [userAccesses]
+    [firebaseUser, userAccesses]
   );
 
   /**
@@ -243,6 +274,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       setError(null);
+      setUserAccesses([]);
       await logoutUser();
       setFirebaseUser(null);
       setUserProfile(null);
@@ -251,6 +283,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsEmailLinkPending(false);
     } catch (err: any) {
       console.error('Erro ao sair:', err);
+      setUserAccesses([]);
       setError('Erro ao encerrar a sessão.');
     }
   };
