@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Dumbbell, ShieldCheck, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Search, ShieldCheck, ShieldAlert, ArrowRight } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 
 interface HomeViewProps {
@@ -45,26 +45,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {hasBaseAccess ? (
             <span className="bg-green-500/10 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/20 uppercase tracking-widest flex items-center gap-1">
               <ShieldCheck size={12} />
-              <span>{userBadge || 'Acesso Base Visual'}</span>
+              <span>{userBadge || 'Acesso Ativo'}</span>
             </span>
           ) : (
             <span className="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/20 uppercase tracking-widest flex items-center gap-1">
               <ShieldAlert size={12} />
-              <span>Módulo BASE Bloqueado</span>
+              <span>Acesso Pendente</span>
             </span>
           )}
         </div>
-
 
         <h1 className="text-xl font-bold tracking-tight text-white pt-0.5">
           Base Visual da Musculação
         </h1>
 
         <p className="text-xs text-zinc-400 leading-relaxed">
-          Encontre rapidamente o exercício ou conteúdo que precisa.
-        </p>
-        <p className="text-[11px] text-zinc-500">
-          Base sincronizada com dados reais da planilha oficial
+          Seu acervo de exercícios, treinos e conteúdos em um só lugar.
         </p>
       </div>
 
@@ -98,7 +94,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         >
           <span className="block text-xl font-bold text-white">{totalMaterials}</span>
           <span className="block text-[9px] uppercase text-zinc-500 font-bold tracking-wider mt-0.5">
-            Materiais
+            Conteúdos
           </span>
         </div>
       </div>
@@ -121,11 +117,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Qual exercício você procura?"
               className="w-full bg-[#1A1412] border border-[#2D2421] rounded-xl py-3 px-4 pr-16 text-sm text-[#EAEAEA] placeholder-zinc-500 focus:outline-none focus:border-[#CC0000] transition-colors"
-            />
+            >
+            </input>
             <button
               id="home-search-button"
               type="submit"
-              className="absolute right-2 top-2 bg-[#CC0000] hover:bg-red-700 text-white font-bold p-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider flex items-center gap-1 transition-all shadow-md shadow-red-950/40"
+              className="absolute right-2 top-2 bg-[#CC0000] hover:bg-red-700 text-white font-bold p-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider flex items-center gap-1 transition-all shadow-md shadow-red-950/40 cursor-pointer"
             >
               <span>Ir</span>
               <ArrowRight size={12} />
@@ -142,8 +139,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </label>
           <button
             id="btn-view-all-categories"
+            type="button"
             onClick={onViewAllExercises}
-            className="text-xs font-bold text-[#CC0000] hover:underline uppercase tracking-wider"
+            className="text-xs font-bold text-[#CC0000] hover:underline uppercase tracking-wider cursor-pointer"
           >
             Ver todos
           </button>
@@ -154,8 +152,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <button
               key={cat.id}
               id={`group-btn-${cat.id}`}
+              type="button"
               onClick={() => onSelectCategory(cat.id)}
-              className="bg-[#1A1412] hover:bg-[#241c19] active:scale-[0.98] border border-[#2D2421] hover:border-[#CC0000] rounded-xl p-3 flex items-center gap-3 transition-all text-left group"
+              className="bg-[#1A1412] hover:bg-[#241c19] active:scale-[0.98] border border-[#2D2421] hover:border-[#CC0000] rounded-xl p-3 flex items-center gap-3 transition-all text-left group cursor-pointer"
             >
               <div
                 className={`w-2 h-6 rounded-full shrink-0 transition-colors ${

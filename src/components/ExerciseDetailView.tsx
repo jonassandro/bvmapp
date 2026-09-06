@@ -137,10 +137,10 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
             <button
               id="btn-ver-demonstracao-locked"
               onClick={() => onOpenVideo && onOpenVideo(exercise)}
-              className="w-full bg-[#120907] hover:bg-[#1c1210] border border-red-500/20 text-zinc-400 hover:text-red-400 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full bg-[#120907] hover:bg-[#1c1210] border border-red-500/20 text-zinc-400 hover:text-red-400 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <Lock size={14} className="text-[#CC0000]" />
-              <span>Vídeo Bloqueado · Liberar Módulo BASE</span>
+              <span>Vídeo Bloqueado · Desbloquear Conteúdo</span>
             </button>
           )}
         </div>

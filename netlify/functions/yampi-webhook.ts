@@ -5,15 +5,15 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 /**
- * Mapeamento oficial e estrito de SKU Yampi -> moduleId
+ * Mapeamento oficial e estrito de SKU Yampi -> moduleId da nova oferta
  */
 const SKU_TO_MODULE_MAP: Record<string, string> = {
-  'T8WHX8Q9Y': 'BASE',
-  'WYL7AJYEX': 'PACK48',
-  'FSV5KT9K3': 'TREINOSDIA',
-  'QAVSZH4SW': 'PROGRAMA8',
-  '76ZG3AQ9F': 'TREINOS30',
-  'SXS4A37PY': 'NUTRICAO',
+  '2GWE9VK2T': 'BASE',
+  'EPA42N3F7': 'PACK48',
+  'HP9CNGR7F': 'TREINOSDIA',
+  '8NWZZ8SL6': 'PROGRAMA8',
+  'Y5UNWY2C7': 'TREINOS30',
+  'Z8GMW9GJA': 'NUTRICAO',
 };
 
 let isFirebaseInitialized = false;

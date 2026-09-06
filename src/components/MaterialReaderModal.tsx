@@ -116,15 +116,14 @@ export const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({
                   <span>Acesso ao Documento Bloqueado</span>
                 </div>
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                  Este material pertence a um módulo não liberado para sua conta. Por segurança, arquivos e links privados não são disponibilizados.
+                  Este conteúdo não faz parte do seu acesso atual. A liberação ocorre automaticamente após a confirmação da compra.
                 </p>
               </div>
 
               <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-3.5 text-xs text-zinc-400 space-y-1">
-                <p className="text-zinc-300 font-semibold">Módulo Requerido:</p>
-                <p className="text-[#CC0000] font-mono font-bold">{material?.moduleId || 'BASE'}</p>
-                <p className="text-[11px] text-zinc-500 pt-1">
-                  Adicione a permissão correspondente no Firestore para desbloquear este guia.
+                <p className="text-zinc-300 font-semibold">Conteúdo Adicional</p>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Adquira este material complementar para liberar o acesso ao guia completo.
                 </p>
               </div>
             </>

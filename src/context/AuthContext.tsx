@@ -9,7 +9,7 @@ import {
   completeEmailSignInLink,
   syncUserProfile,
   subscribeUserAccesses,
-  setModuleAccessDev,
+  getUserAccesses,
   AppUserProfile,
 } from '../lib/firebase';
 import { FirestoreUserAccess, ValidModuleId } from '../types';
@@ -24,7 +24,7 @@ interface AuthContextType {
   emailLinkSentTo: string | null;
   isEmailLinkPending: boolean;
   hasAccess: (moduleId: string) => boolean;
-  grantModuleDev: (moduleId: ValidModuleId | string, active: boolean) => Promise<void>;
+  refreshAccesses: () => Promise<void>;
   loginGoogle: () => Promise<void>;
   sendAccessLink: (email: string) => Promise<void>;
   confirmAccessLink: (email: string) => Promise<void>;
@@ -154,12 +154,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 
   /**
-   * Development / Admin helper to grant or revoke a module permission in Firestore
+   * Atualização manual de acessos sob demanda (sincronização com Firestore)
    */
-  const grantModuleDev = async (moduleId: ValidModuleId | string, active: boolean) => {
-    if (!firebaseUser) throw new Error('Usuário precisa estar autenticado.');
-    const userEmail = firebaseUser.email || userProfile?.email || '';
-    await setModuleAccessDev(firebaseUser.uid, userEmail, moduleId, active);
+  const refreshAccesses = async () => {
+    if (!firebaseUser) return;
+    try {
+      setLoadingAccesses(true);
+      const email = firebaseUser.email || userProfile?.email || '';
+      const data = await getUserAccesses(firebaseUser.uid, email);
+      setUserAccesses(data);
+    } catch (err: any) {
+      console.error('Erro ao atualizar acessos:', err);
+    } finally {
+      setLoadingAccesses(false);
+    }
   };
 
   /**
@@ -262,7 +270,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         emailLinkSentTo,
         isEmailLinkPending,
         hasAccess,
-        grantModuleDev,
+        refreshAccesses,
         loginGoogle,
         sendAccessLink,
         confirmAccessLink,

@@ -1,10 +1,19 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Lock, ChevronRight, ShieldAlert, ExternalLink, FileSpreadsheet, Image as ImageIcon } from 'lucide-react';
+import {
+  BookOpen,
+  ShieldCheck,
+  Lock,
+  ChevronRight,
+  ShieldAlert,
+  ExternalLink,
+  FileSpreadsheet,
+  Image as ImageIcon,
+} from 'lucide-react';
 import { Material, CatalogItem } from '../types';
 
 interface ContentsViewProps {
   materials: Material[];
-  catalogItems: CatalogItem[];
+  catalogItems?: CatalogItem[];
   hasAccess: (moduleId: string) => boolean;
   onSelectMaterial: (material: Material) => void;
   onAccessDirectMaterial?: (material: Material) => void;
@@ -17,9 +26,10 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
   hasAccess,
   onSelectMaterial,
   onAccessDirectMaterial,
+  onSelectLockedItem,
   onGoToProfile,
 }) => {
-  // Visivel_Catalogo e Ativo definem visibilidade no catálogo, NÃO acesso
+  // Visivel_Catalogo e Ativo definem visibilidade no catálogo
   const isMaterialCatalogActive = (m: Material) => {
     const vis = m.Visivel_Catalogo !== undefined ? m.Visivel_Catalogo : m.visibleInCatalog;
     const act = m.Ativo !== undefined ? m.Ativo : m.active;
@@ -30,7 +40,7 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
 
   const activeMaterials = materials.filter(isMaterialCatalogActive);
 
-  // Acesso controlado estritamente pelo ModuloID e permissões do usuário
+  // Acesso controlado estritamente pelo ModuloID
   const releasedMaterials = activeMaterials.filter((m) => {
     const modId = m.ModuloID || m.moduleId;
     return hasAccess(modId);
@@ -46,13 +56,28 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
   const activeCount = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO'].filter(hasAccess).length;
   const allUnlocked = activeCount === allCount;
 
-  const handleButtonClick = (e: React.MouseEvent, material: Material) => {
+  const handleAccessClick = (e: React.MouseEvent, material: Material) => {
     e.stopPropagation();
     if (onAccessDirectMaterial) {
       onAccessDirectMaterial(material);
     } else {
       onSelectMaterial(material);
     }
+  };
+
+  const handleUnlockClick = (e: React.MouseEvent, material: Material) => {
+    e.stopPropagation();
+    const modId = material.ModuloID || material.moduleId;
+    onSelectLockedItem({
+      id: `LOCKED_${material.ID || material.id}`,
+      title: material.Titulo || material.title,
+      category: material.Categoria || material.category || material.tag || 'Material Complementar',
+      type: material.Tipo || material.type || 'Material Digital',
+      moduleId: modId,
+      permissionName: 'Conteúdo Adicional',
+      status: 'Bloqueado',
+      isLockedDefault: true,
+    });
   };
 
   const getItemIcon = (material: Material) => {
@@ -81,7 +106,7 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
           ) : (
             <span className="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/20 uppercase tracking-widest flex items-center gap-1">
               <ShieldAlert size={12} />
-              <span>Sem Módulos Ativos</span>
+              <span>Acesso Pendente</span>
             </span>
           )}
         </div>
@@ -91,11 +116,7 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
         </h1>
 
         <p className="text-xs text-zinc-400 leading-relaxed">
-          Biblioteca oficial com todos os materiais, guias e planilhas oficiais.
-        </p>
-
-        <p className="text-[11px] text-zinc-500 leading-relaxed">
-          Cada material é liberado exclusivamente mediante permissão ativa no seu usuário.
+          Acervo oficial com todos os materiais, guias ilustrados e planilhas de treinamento.
         </p>
       </div>
 
@@ -105,8 +126,8 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
           <h2 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
             Conteúdos Liberados
           </h2>
-          <span className="text-[10px] font-bold text-green-500 uppercase tracking-wider">
-            {releasedMaterials.length} liberados
+          <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider">
+            {releasedMaterials.length} disponíveis
           </span>
         </div>
 
@@ -115,7 +136,6 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
             {releasedMaterials.map((material) => {
               const matId = material.ID || material.id;
               const isSpreadsheet = material.Tipo === 'Planilha' || material.type === 'Planilha';
-              const isImage = material.Tipo === 'Imagem' || material.type === 'Imagem';
 
               return (
                 <div
@@ -132,8 +152,8 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
                       <h3 className="text-xs font-bold text-white uppercase truncate">
                         {material.Titulo || material.title}
                       </h3>
-                      <p className="text-[10px] text-zinc-400 mt-0.5 truncate">
-                        {material.descricaoCurta || material.subtitle} · {material.Tipo || material.type}
+                      <p className="text-[10px] text-green-400 font-semibold mt-0.5 truncate">
+                        Disponível
                       </p>
                     </div>
                   </div>
@@ -141,17 +161,11 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
                   <button
                     type="button"
                     id={`btn-acessar-${matId}`}
-                    onClick={(e) => handleButtonClick(e, material)}
-                    className="text-[10px] font-bold uppercase tracking-wider text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 active:scale-95 px-3 py-1.5 rounded-lg shrink-0 flex items-center gap-1 transition-all cursor-pointer"
+                    onClick={(e) => handleAccessClick(e, material)}
+                    className="text-[10px] font-bold uppercase tracking-wider text-white bg-green-600 hover:bg-green-500 active:scale-95 px-3 py-1.5 rounded-lg shrink-0 flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-green-950/40"
                   >
-                    {isSpreadsheet ? (
-                      <ExternalLink size={12} />
-                    ) : isImage ? (
-                      <ImageIcon size={12} />
-                    ) : (
-                      <BookOpen size={12} />
-                    )}
-                    <span>{isSpreadsheet ? 'Planilha' : isImage ? 'Visualizar' : 'Acessar'}</span>
+                    {isSpreadsheet ? <ExternalLink size={12} /> : <BookOpen size={12} />}
+                    <span>Acessar</span>
                   </button>
                 </div>
               );
@@ -159,22 +173,22 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
           </div>
         ) : (
           <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 text-xs text-zinc-400 space-y-1">
-            <p className="font-semibold text-zinc-300">Nenhum conteúdo liberado no momento</p>
+            <p className="font-semibold text-zinc-300">Nenhum conteúdo disponível no momento</p>
             <p className="text-[11px] text-zinc-500">
-              Sua conta ainda não possui permissões ativas. Ative a permissão <strong>BASE</strong> para liberar os guias e exercícios.
+              Seus conteúdos comprados serão liberados automaticamente após a confirmação do pedido.
             </p>
           </div>
         )}
       </div>
 
-      {/* Outros Conteúdos (Bloqueados) Section */}
+      {/* Conteúdos Adicionais (Bloqueados) Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-            Outros Conteúdos (Bloqueados)
+            Conteúdos Adicionais
           </h2>
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-            {lockedMaterials.length} bloqueados
+            {lockedMaterials.length} adicionais
           </span>
         </div>
 
@@ -182,7 +196,6 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
           <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl divide-y divide-[#2D2421] overflow-hidden shadow-md">
             {lockedMaterials.map((material) => {
               const matId = material.ID || material.id;
-              const modId = material.ModuloID || material.moduleId;
 
               return (
                 <div
@@ -200,15 +213,20 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
                         {material.Titulo || material.title}
                       </h3>
                       <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
-                        Conteúdo adicional · Módulo {modId}
+                        Conteúdo adicional
                       </p>
                     </div>
                   </div>
 
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-[#120907] text-zinc-500 border border-[#2D2421] shrink-0 flex items-center gap-1">
-                    <Lock size={10} />
-                    <span>Bloqueado</span>
-                  </span>
+                  <button
+                    type="button"
+                    id={`btn-desbloquear-${matId}`}
+                    onClick={(e) => handleUnlockClick(e, material)}
+                    className="text-[10px] font-bold uppercase tracking-wider text-zinc-300 bg-[#241a17] hover:bg-[#2e211e] hover:text-white border border-[#3d2e29] active:scale-95 px-3 py-1.5 rounded-lg shrink-0 flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Lock size={11} className="text-[#CC0000]" />
+                    <span>Desbloquear</span>
+                  </button>
                 </div>
               );
             })}
@@ -216,20 +234,20 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
         ) : (
           <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 text-xs text-green-300 flex items-center gap-2.5">
             <ShieldCheck size={18} className="shrink-0 text-green-400" />
-            <span>Todos os módulos do catálogo estão liberados para esta conta!</span>
+            <span>Todos os conteúdos do acervo estão liberados para a sua conta!</span>
           </div>
         )}
       </div>
 
-      {/* Link: Gerenciar permissões no Perfil */}
+      {/* Link para Meu Perfil */}
       <div className="pt-1">
         <button
           id="btn-ver-acesso-perfil"
           type="button"
           onClick={onGoToProfile}
-          className="text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
+          className="text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
         >
-          <span>Gerenciar permissões no Perfil</span>
+          <span>Ver meus acessos no Perfil</span>
           <ChevronRight size={14} />
         </button>
       </div>

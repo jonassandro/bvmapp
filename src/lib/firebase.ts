@@ -260,30 +260,4 @@ export function subscribeUserAccesses(
   );
 }
 
-/**
- * Dev / Admin helper to manually toggle or grant a module permission in 'user_access'
- */
-export async function setModuleAccessDev(
-  userId: string,
-  email: string,
-  moduleId: ValidModuleId | string,
-  active: boolean,
-  source: string = 'admin_dev'
-): Promise<void> {
-  const docId = `${userId}_${moduleId}`;
-  const docRef = doc(db, 'user_access', docId);
-  await setDoc(
-    docRef,
-    {
-      userId,
-      email: email.trim().toLowerCase(),
-      moduleId,
-      active,
-      createdAt: serverTimestamp(),
-      source,
-    },
-    { merge: true }
-  );
-}
-
 

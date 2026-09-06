@@ -176,13 +176,6 @@ export const ContentDetailView: React.FC<ContentDetailViewProps> = ({
                 </p>
               )}
             </div>
-
-            <div className="pt-2 border-t border-[#2D2421] flex items-center gap-2 text-[11px] text-zinc-500">
-              <span>Módulo necessário:</span>
-              <span className="font-bold text-[#CC0000] font-mono">
-                {material.ModuloID || material.moduleId}
-              </span>
-            </div>
           </div>
 
           <div className="bg-[#1A1412] border border-red-500/20 rounded-xl p-5 shadow-md space-y-4">
@@ -192,11 +185,10 @@ export const ContentDetailView: React.FC<ContentDetailViewProps> = ({
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-bold text-white uppercase">
-                  Este conteúdo não está incluso no seu acesso.
+                  Conteúdo Adicional
                 </p>
                 <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Para visualizar este material, você precisa possuir a permissão do módulo{' '}
-                  <strong className="text-white">{material.ModuloID || material.moduleId}</strong> liberada em sua conta.
+                  Este material faz parte dos conteúdos complementares da Base Visual da Musculação. Desbloqueie para ter acesso completo.
                 </p>
               </div>
             </div>

@@ -33,7 +33,7 @@ function AppContent() {
     userProfile,
     userAccesses,
     hasAccess,
-    grantModuleDev,
+    refreshAccesses,
     loading,
     logout,
   } = useAuth();
@@ -129,7 +129,7 @@ function AppContent() {
             <h2 className="text-sm font-bold uppercase tracking-wider text-white">
               Base Visual da Musculação
             </h2>
-            <p className="text-xs text-zinc-500">Sincronizando permissões Firestore...</p>
+            <p className="text-xs text-zinc-500">Carregando seu acesso...</p>
           </div>
           <Loader2 size={24} className="animate-spin text-[#CC0000] mx-auto" />
         </div>
@@ -407,17 +407,14 @@ function AppContent() {
             <ProfileView
               user={user}
               materials={MATERIALS}
-              catalogItems={CATALOG_ITEMS}
-              userAccesses={userAccesses}
               hasAccess={hasAccess}
-              onGrantModuleDev={grantModuleDev}
-              onOpenFeedback={() => setIsFeedbackOpen(true)}
+              onRefreshAccesses={refreshAccesses}
+              onOpenHelp={() => setIsFeedbackOpen(true)}
               onSelectMaterial={(mat) => {
                 setActiveViewingMaterial(null);
                 setSelectedMaterial(mat);
                 setCurrentTab('conteudos');
               }}
-              onSelectLockedItem={(item) => setLockedCatalogItem(item)}
               onLogout={logout}
             />
           )}
@@ -438,9 +435,6 @@ function AppContent() {
           item={lockedCatalogItem}
           onClose={() => setLockedCatalogItem(null)}
           onGoToProfile={() => setCurrentTab('perfil')}
-          onGrantDev={async (modId) => {
-            await grantModuleDev(modId, true);
-          }}
         />
 
         <DemonstrationModal

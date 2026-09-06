@@ -192,7 +192,7 @@ export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
               <div className="space-y-1">
                 <h4 className="text-sm font-bold text-white uppercase">Vídeo Bloqueado</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  A visualização deste vídeo requer a permissão ativa do <strong>Módulo BASE</strong> no Firestore.
+                  A visualização deste vídeo é exclusiva para membros com a Base Visual liberada.
                 </p>
               </div>
             </div>
@@ -203,8 +203,8 @@ export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
         {/* Scrollable Details & Footer */}
         <div className="p-3.5 sm:p-4 bg-[#120907] border-t border-[#2D2421] space-y-3 text-xs overflow-y-auto">
           <div className="flex items-center justify-between text-zinc-500">
-            <span className="font-mono text-[10px] truncate max-w-[220px]">
-              {exercise.videoFileName || `${exercise.name.toUpperCase().replace(/\s+/g, '_')}.mp4`}
+            <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[220px]">
+              {exercise.name} · Demonstração
             </span>
             <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-wider shrink-0">
               Página {exercise.pageNumber} · Base Oficial

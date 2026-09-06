@@ -61,16 +61,16 @@ export const ExercisesView: React.FC<ExercisesViewProps> = ({
         </span>
       </div>
 
-      {/* Warning banner when BASE module is not active */}
+      {/* Warning banner when BASE access is not active */}
       {!hasBaseAccess && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-red-300">
           <ShieldAlert size={16} className="shrink-0 text-red-400 mt-0.5" />
           <div className="space-y-0.5">
             <p className="font-bold uppercase tracking-wide text-white text-[11px]">
-              Módulo BASE não liberado
+              Base Visual não liberada
             </p>
             <p className="text-[11px] text-zinc-400 leading-relaxed">
-              Você pode navegar pelo catálogo dos 149 exercícios, mas a reprodução de vídeos e o guia completo da Base Visual requerem a permissão <strong className="text-white">BASE</strong> ativa no Firestore.
+              Você pode navegar pelo catálogo dos 149 exercícios. Para assistir às demonstrações em vídeo e acessar o guia ilustrado, adquira a Base Visual da Musculação.
             </p>
           </div>
         </div>
