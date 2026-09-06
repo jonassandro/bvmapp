@@ -201,7 +201,17 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
     };
   }
 
+  // Diagnóstico seguro de SKUs recebidos (item_sku e fallback sku.data.sku)
+  const skusRecebidos = items.map((item: any) => ({
+    item_sku: item?.item_sku || null,
+    fallback_sku: item?.sku?.data?.sku || null,
+    resolved_sku: (item?.item_sku || item?.sku?.data?.sku || '').toString().trim().toUpperCase() || null,
+    usedFallback: !item?.item_sku && !!item?.sku?.data?.sku,
+  }));
+
   // 9. Mapear SKUs para moduleIds oficiais (suporta produto principal + order bumps)
+  const mappingResults: Array<{ sku: string; moduleId: string | null }> = [];
+  const ignoredSkus: string[] = [];
   const modulesToGrant = new Map<string, { sku: string; moduleId: string }>();
 
   for (const item of items) {
@@ -211,8 +221,20 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
     const moduleId = SKU_TO_MODULE_MAP[rawSku];
     if (moduleId) {
       modulesToGrant.set(moduleId, { sku: rawSku, moduleId });
+      mappingResults.push({ sku: rawSku, moduleId });
+    } else {
+      ignoredSkus.push(rawSku);
+      mappingResults.push({ sku: rawSku, moduleId: null });
     }
   }
+
+  // Logs temporários de diagnóstico Yampi
+  console.log('[YAMPI] orderId:', orderId);
+  console.log('[YAMPI] email:', normalizedEmail);
+  console.log('[YAMPI] skus recebidos:', skusRecebidos);
+  console.log('[YAMPI] mapeamento:', mappingResults);
+  console.log('[YAMPI] modulos liberados:', modulesToGrant);
+  console.log('[YAMPI] skus ignorados:', ignoredSkus);
 
   if (modulesToGrant.size === 0) {
     return {
