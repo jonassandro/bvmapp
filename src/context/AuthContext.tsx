@@ -111,9 +111,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
+    const userEmail = firebaseUser.email || userProfile?.email;
+
     setLoadingAccesses(true);
     const unsubscribe = subscribeUserAccesses(
       firebaseUser.uid,
+      userEmail,
       (accesses) => {
         setUserAccesses(accesses);
         setLoadingAccesses(false);
@@ -125,7 +128,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 
     return () => unsubscribe();
-  }, [firebaseUser]);
+  }, [firebaseUser, userProfile?.email]);
 
   /**
    * Check if user has active permission for a given module

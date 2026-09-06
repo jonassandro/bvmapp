@@ -19,6 +19,7 @@ import {
   collection,
   query,
   where,
+  or,
   getDocs,
   onSnapshot,
   serverTimestamp,
@@ -188,35 +189,69 @@ export async function syncUserProfile(firebaseUser: FirebaseUser): Promise<AppUs
 }
 
 /**
- * Fetch all module accesses for a specific user from Firestore
+ * Fetch all module accesses for a specific user from Firestore.
+ * Supports querying both by userId and verified email.
  */
-export async function getUserAccesses(userId: string): Promise<FirestoreUserAccess[]> {
-  const q = query(collection(db, 'user_access'), where('userId', '==', userId));
+export async function getUserAccesses(
+  userId: string,
+  userEmail?: string | null
+): Promise<FirestoreUserAccess[]> {
+  const normalizedEmail = userEmail ? userEmail.trim().toLowerCase() : null;
+  const q = normalizedEmail
+    ? query(
+        collection(db, 'user_access'),
+        or(where('userId', '==', userId), where('email', '==', normalizedEmail))
+      )
+    : query(collection(db, 'user_access'), where('userId', '==', userId));
+
   const snap = await getDocs(q);
-  const accesses: FirestoreUserAccess[] = [];
+  const accessesMap = new Map<string, FirestoreUserAccess>();
   snap.forEach((docSnap) => {
-    accesses.push({ id: docSnap.id, ...(docSnap.data() as FirestoreUserAccess) });
+    const data = { id: docSnap.id, ...(docSnap.data() as FirestoreUserAccess) };
+    const modKey = (data.moduleId || '').toUpperCase().trim();
+    if (modKey) {
+      const existing = accessesMap.get(modKey);
+      if (!existing || (!existing.active && data.active)) {
+        accessesMap.set(modKey, data);
+      }
+    }
   });
-  return accesses;
+  return Array.from(accessesMap.values());
 }
 
 /**
- * Real-time listener for user module permissions in Firestore 'user_access' collection
+ * Real-time listener for user module permissions in Firestore 'user_access' collection.
+ * Supports querying both by userId and verified email.
  */
 export function subscribeUserAccesses(
   userId: string,
+  userEmail: string | null | undefined,
   onUpdate: (accesses: FirestoreUserAccess[]) => void,
   onError?: (error: Error) => void
 ): () => void {
-  const q = query(collection(db, 'user_access'), where('userId', '==', userId));
+  const normalizedEmail = userEmail ? userEmail.trim().toLowerCase() : null;
+  const q = normalizedEmail
+    ? query(
+        collection(db, 'user_access'),
+        or(where('userId', '==', userId), where('email', '==', normalizedEmail))
+      )
+    : query(collection(db, 'user_access'), where('userId', '==', userId));
+
   return onSnapshot(
     q,
     (snapshot) => {
-      const accesses: FirestoreUserAccess[] = [];
+      const accessesMap = new Map<string, FirestoreUserAccess>();
       snapshot.forEach((docSnap) => {
-        accesses.push({ id: docSnap.id, ...(docSnap.data() as FirestoreUserAccess) });
+        const data = { id: docSnap.id, ...(docSnap.data() as FirestoreUserAccess) };
+        const modKey = (data.moduleId || '').toUpperCase().trim();
+        if (modKey) {
+          const existing = accessesMap.get(modKey);
+          if (!existing || (!existing.active && data.active)) {
+            accessesMap.set(modKey, data);
+          }
+        }
       });
-      onUpdate(accesses);
+      onUpdate(Array.from(accessesMap.values()));
     },
     (err) => {
       console.error('Erro ao escutar permissões em tempo real:', err);
