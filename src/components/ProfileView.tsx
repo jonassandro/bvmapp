@@ -13,9 +13,12 @@ import {
   Image as ImageIcon,
   Sparkles,
   ExternalLink,
+  Smartphone,
 } from 'lucide-react';
 import { UserProfile, Material } from '../types';
 import { getMaterialMeta } from '../data/contentCovers';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { IOSInstallModal } from './IOSInstallModal';
 
 interface ProfileViewProps {
   user: UserProfile;
@@ -38,6 +41,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshSuccess, setRefreshSuccess] = useState(false);
+  const [isIOSModalOpen, setIsIOSModalOpen] = useState(false);
+  const [androidNotice, setAndroidNotice] = useState<string | null>(null);
+
+  const { isStandalone, isIOS, canInstallNative, install } = usePWAInstall();
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      setIsIOSModalOpen(true);
+      return;
+    }
+
+    if (canInstallNative) {
+      await install();
+    } else {
+      setAndroidNotice('No menu do navegador (⋮), toque em "Instalar aplicativo" ou "Adicionar à tela inicial".');
+      setTimeout(() => setAndroidNotice(null), 5000);
+    }
+  };
+
 
   // Filtrar apenas materiais que o usuário possui acesso ativo
   const myUnlockedMaterials = materials.filter((m) => {
@@ -200,6 +222,35 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           Acesso e Suporte
         </label>
 
+        {/* Botão Instalar Base Visual (apenas quando não estiver instalado em modo standalone) */}
+        {!isStandalone && (
+          <div className="space-y-1.5">
+            <button
+              id="btn-install-pwa"
+              type="button"
+              onClick={handleInstallClick}
+              className="w-full bg-[#111116] hover:bg-[#181822] active:scale-[0.99] border border-[#2e2e3e] hover:border-red-500/50 text-zinc-100 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-colors">
+                  <Smartphone size={14} />
+                </div>
+                <span>Instalar Base Visual</span>
+              </div>
+              <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider flex items-center gap-1 group-hover:text-red-300">
+                <span>Instalar</span>
+                <ChevronRight size={14} />
+              </span>
+            </button>
+
+            {androidNotice && (
+              <p className="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 leading-tight">
+                {androidNotice}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Botão Atualizar Acesso */}
         <button
           id="btn-refresh-access"
@@ -239,6 +290,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <ChevronRight size={14} className="text-zinc-500" />
         </button>
       </div>
+
+      {/* iOS Installation Instructions Modal */}
+      <IOSInstallModal
+        isOpen={isIOSModalOpen}
+        onClose={() => setIsIOSModalOpen(false)}
+      />
 
       {/* Logout Action */}
       {onLogout && (

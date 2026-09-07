@@ -45,9 +45,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [emailLinkSentTo, setEmailLinkSentTo] = useState<string | null>(null);
   const [isEmailLinkPending, setIsEmailLinkPending] = useState(false);
 
-  // Clear any residual test bypass flag on startup
+  // Clear any residual test flags on startup
   useEffect(() => {
     try {
+      window.sessionStorage.removeItem('TEST_MODE_ACTIVE');
       window.sessionStorage.removeItem('TEST_BYPASS_ALL');
     } catch {}
   }, []);
@@ -154,7 +155,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    * - Requires non-empty userAccesses
    * - Requires active === true
    * - Confirms record ownership matches current user's UID or verified email
-   * - No demo bypass, no fallback true, no automatic BASE
    */
   const hasAccess = useCallback(
     (moduleId: string): boolean => {

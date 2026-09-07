@@ -8,256 +8,171 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   User as FirebaseUser,
-  ActionCodeSettings,
 } from 'firebase/auth';
 import {
   getFirestore,
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   collection,
   query,
   where,
-  or,
-  getDocs,
   onSnapshot,
+  getDocs,
   serverTimestamp,
 } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
-import { FirestoreUserAccess, ValidModuleId } from '../types';
+import { FirestoreUserAccess } from '../types';
+import firebaseConfigData from '../../firebase-applet-config.json';
 
+const firebaseConfig = {
+  apiKey: firebaseConfigData.apiKey,
+  authDomain: firebaseConfigData.authDomain,
+  projectId: firebaseConfigData.projectId,
+  storageBucket: firebaseConfigData.storageBucket,
+  messagingSenderId: firebaseConfigData.messagingSenderId,
+  appId: firebaseConfigData.appId,
+};
 
-// Initialize Firebase App singleton
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// Initialize Auth
+export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-
-// Initialize Firestore with specific database ID from config
-export const db = firebaseConfig.firestoreDatabaseId
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+export const db = firebaseConfigData.firestoreDatabaseId
+  ? getFirestore(app, firebaseConfigData.firestoreDatabaseId)
   : getFirestore(app);
-
-// Google Auth Provider
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-});
 
 export interface AppUserProfile {
   uid: string;
   email: string;
   name: string;
-  photoURL: string;
+  photoURL?: string;
+  active?: boolean;
   createdAt?: any;
   lastLoginAt?: any;
-  active: boolean;
 }
 
-/**
- * Sign in with Google Popup
- */
-export async function loginWithGoogle(): Promise<FirebaseUser> {
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
+export async function loginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  const res = await signInWithPopup(auth, provider);
+  return res.user;
 }
 
-/**
- * Continue URL para retorno do fluxo de login por link de e-mail.
- * Em produção/deploy: lê a variável pública VITE_APP_PUBLIC_URL se configurada.
- * Em desenvolvimento/preview: utiliza window.location.origin como fallback.
- */
-export function getAuthContinueUrl(): string {
-  const publicUrl = import.meta.env.VITE_APP_PUBLIC_URL;
-  if (publicUrl && typeof publicUrl === 'string' && publicUrl.trim() !== '') {
-    return publicUrl.trim().replace(/\/+$/, '');
-  }
-  return window.location.origin;
+export async function logoutUser() {
+  return signOut(auth);
 }
 
-/**
- * Send passwordless access link to user's email
- */
-export async function sendEmailAccessLink(email: string): Promise<void> {
-  const normalizedEmail = email.trim().toLowerCase();
-  
-  // URL to redirect back to app after clicking the link in email
-  const continueUrl = getAuthContinueUrl();
-
-  const actionCodeSettings: ActionCodeSettings = {
-    url: continueUrl,
+export async function sendEmailAccessLink(email: string) {
+  const actionCodeSettings = {
+    url: window.location.origin,
     handleCodeInApp: true,
   };
-
-  await sendSignInLinkToEmail(auth, normalizedEmail, actionCodeSettings);
-  window.localStorage.setItem('emailForSignIn', normalizedEmail);
+  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+  window.localStorage.setItem('emailForSignIn', email);
 }
 
-/**
- * Check if the current URL contains a Firebase Email Sign-In link
- */
-export function checkIsEmailSignInLink(): boolean {
+export function checkIsEmailSignInLink() {
   return isSignInWithEmailLink(auth, window.location.href);
 }
 
-/**
- * Complete sign in using the Email Link received in email
- */
-export async function completeEmailSignInLink(emailToConfirm?: string): Promise<FirebaseUser> {
-  let email = (emailToConfirm || window.localStorage.getItem('emailForSignIn') || '').trim().toLowerCase();
-
-  if (!email) {
-    throw new Error('EMAIL_REQUIRED_FOR_SIGNIN');
-  }
-
+export async function completeEmailSignInLink(email: string) {
   const result = await signInWithEmailLink(auth, email, window.location.href);
   window.localStorage.removeItem('emailForSignIn');
-
-  // Clean URL query parameters cleanly from browser address bar
-  if (window.history && window.history.replaceState) {
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-
   return result.user;
 }
 
-/**
- * Sign out current user
- */
-export async function logoutUser(): Promise<void> {
-  await signOut(auth);
-}
+export async function syncUserProfile(user: FirebaseUser): Promise<AppUserProfile> {
+  const userRef = doc(db, 'users', user.uid);
+  const snap = await getDoc(userRef);
 
-/**
- * Synchronize user document in Firestore 'users' collection
- * Guarantees that the document ID matches Firebase UID,
- * email is stored normalized (lowercase/trimmed) for future Yampi purchase matching,
- * and existing profiles are not duplicated.
- */
-export async function syncUserProfile(firebaseUser: FirebaseUser): Promise<AppUserProfile> {
-  const userRef = doc(db, 'users', firebaseUser.uid);
-  const userSnap = await getDoc(userRef);
+  const profileData: AppUserProfile = {
+    uid: user.uid,
+    email: (user.email || '').trim().toLowerCase(),
+    name: user.displayName || user.email?.split('@')[0] || 'Usuário',
+    photoURL: user.photoURL || '',
+    active: true,
+    lastLoginAt: serverTimestamp(),
+  };
 
-  const email = (firebaseUser.email || '').trim().toLowerCase();
-  const fallbackName = firebaseUser.displayName || (email ? email.split('@')[0] : 'Usuário');
-  const photoURL = firebaseUser.photoURL || '';
-
-  if (!userSnap.exists()) {
-    // First time login - create new user document
-    const newProfile: AppUserProfile = {
-      uid: firebaseUser.uid,
-      email,
-      name: fallbackName,
-      photoURL,
-      createdAt: serverTimestamp(),
-      lastLoginAt: serverTimestamp(),
-      active: true,
-    };
-
-    await setDoc(userRef, newProfile);
-    return newProfile;
+  if (!snap.exists()) {
+    profileData.createdAt = serverTimestamp();
+    await setDoc(userRef, profileData, { merge: true });
   } else {
-    // Existing user - update lastLoginAt and keep profile refreshed
-    const existingData = userSnap.data() as AppUserProfile;
-    const updates: Partial<AppUserProfile> = {
-      lastLoginAt: serverTimestamp(),
-      active: true,
-    };
-
-    if (fallbackName && (!existingData.name || existingData.name === 'Usuário')) {
-      updates.name = fallbackName;
+    await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
+    const existing = snap.data();
+    if (existing) {
+      if (existing.name) profileData.name = existing.name;
+      if (existing.active !== undefined) profileData.active = existing.active;
+      if (existing.createdAt) profileData.createdAt = existing.createdAt;
     }
-    if (email && email !== existingData.email) {
-      updates.email = email;
-    }
-    if (photoURL && photoURL !== existingData.photoURL) {
-      updates.photoURL = photoURL;
-    }
-
-    await updateDoc(userRef, updates);
-
-    return {
-      ...existingData,
-      ...updates,
-      uid: firebaseUser.uid,
-      email: email || existingData.email,
-      name: existingData.name || fallbackName,
-      photoURL: photoURL || existingData.photoURL,
-    };
   }
+
+  return profileData;
 }
 
-/**
- * Fetch all module accesses for a specific user from Firestore.
- * Supports querying both by userId and verified email.
- */
-export async function getUserAccesses(
-  userId: string,
-  userEmail?: string | null
-): Promise<FirestoreUserAccess[]> {
-  const normalizedEmail = userEmail ? userEmail.trim().toLowerCase() : null;
-  const q = normalizedEmail
-    ? query(
-        collection(db, 'user_access'),
-        or(where('userId', '==', userId), where('email', '==', normalizedEmail))
-      )
-    : query(collection(db, 'user_access'), where('userId', '==', userId));
-
-  const snap = await getDocs(q);
-  const accessesMap = new Map<string, FirestoreUserAccess>();
-  snap.forEach((docSnap) => {
-    const data = { id: docSnap.id, ...(docSnap.data() as FirestoreUserAccess) };
-    const modKey = (data.moduleId || '').toUpperCase().trim();
-    if (modKey) {
-      const existing = accessesMap.get(modKey);
-      if (!existing || (!existing.active && data.active)) {
-        accessesMap.set(modKey, data);
-      }
-    }
-  });
-  return Array.from(accessesMap.values());
-}
-
-/**
- * Real-time listener for user module permissions in Firestore 'user_access' collection.
- * Supports querying both by userId and verified email.
- */
 export function subscribeUserAccesses(
-  userId: string,
-  userEmail: string | null | undefined,
-  onUpdate: (accesses: FirestoreUserAccess[]) => void,
-  onError?: (error: Error) => void
-): () => void {
-  const normalizedEmail = userEmail ? userEmail.trim().toLowerCase() : null;
-  const q = normalizedEmail
-    ? query(
-        collection(db, 'user_access'),
-        or(where('userId', '==', userId), where('email', '==', normalizedEmail))
-      )
-    : query(collection(db, 'user_access'), where('userId', '==', userId));
+  uid: string,
+  email: string,
+  onData: (accesses: FirestoreUserAccess[]) => void,
+  onError?: (error: any) => void
+) {
+  const accessRef = collection(db, 'user_access');
+  const qUid = query(accessRef, where('userId', '==', uid));
 
-  return onSnapshot(
-    q,
+  const unsubscribe = onSnapshot(
+    qUid,
     (snapshot) => {
-      const accessesMap = new Map<string, FirestoreUserAccess>();
-      snapshot.forEach((docSnap) => {
-        const data = { id: docSnap.id, ...(docSnap.data() as FirestoreUserAccess) };
-        const modKey = (data.moduleId || '').toUpperCase().trim();
-        if (modKey) {
-          const existing = accessesMap.get(modKey);
-          if (!existing || (!existing.active && data.active)) {
-            accessesMap.set(modKey, data);
-          }
-        }
+      const accesses: FirestoreUserAccess[] = [];
+      snapshot.forEach((d) => {
+        accesses.push({ id: d.id, ...(d.data() as any) });
       });
-      onUpdate(Array.from(accessesMap.values()));
+
+      if (email) {
+        const qEmail = query(accessRef, where('email', '==', email.toLowerCase().trim()));
+        getDocs(qEmail)
+          .then((emailSnap) => {
+            emailSnap.forEach((d) => {
+              if (!accesses.some((a) => a.id === d.id)) {
+                accesses.push({ id: d.id, ...(d.data() as any) });
+              }
+            });
+            onData(accesses);
+          })
+          .catch(() => {
+            onData(accesses);
+          });
+      } else {
+        onData(accesses);
+      }
     },
     (err) => {
-      console.error('Erro ao escutar permissões em tempo real:', err);
       if (onError) onError(err);
     }
   );
+
+  return unsubscribe;
 }
 
+export async function getUserAccesses(uid: string, email: string): Promise<FirestoreUserAccess[]> {
+  const accessRef = collection(db, 'user_access');
+  const accesses: FirestoreUserAccess[] = [];
 
+  try {
+    const qUid = query(accessRef, where('userId', '==', uid));
+    const snapUid = await getDocs(qUid);
+    snapUid.forEach((d) => {
+      accesses.push({ id: d.id, ...(d.data() as any) });
+    });
+
+    if (email) {
+      const qEmail = query(accessRef, where('email', '==', email.toLowerCase().trim()));
+      const snapEmail = await getDocs(qEmail);
+      snapEmail.forEach((d) => {
+        if (!accesses.some((a) => a.id === d.id)) {
+          accesses.push({ id: d.id, ...(d.data() as any) });
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Erro ao buscar acessos no Firestore:', err);
+  }
+
+  return accesses;
+}

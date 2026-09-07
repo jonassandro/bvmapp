@@ -26,6 +26,8 @@ import { FeedbackModal } from './components/FeedbackModal';
 import { LockedContentModal } from './components/LockedContentModal';
 import { DemonstrationModal } from './components/DemonstrationModal';
 import { MaterialReaderModal } from './components/MaterialReaderModal';
+import { PWAUpdateToast } from './components/PWAUpdateToast';
+import { AppUpgradeRequiredView } from './components/AppUpgradeRequiredView';
 
 function AppContent() {
   const {
@@ -35,6 +37,7 @@ function AppContent() {
     hasAccess,
     refreshAccesses,
     loading,
+    loadingAccesses,
     logout,
   } = useAuth();
 
@@ -65,12 +68,13 @@ function AppContent() {
   });
 
   // Access checks
+  const hasAppAccess = hasAccess('APP_ACCESS');
   const hasBase = hasAccess('BASE');
   const allModulesList = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO'];
   const activeCount = allModulesList.filter((m) => hasAccess(m)).length;
   const hasAllModules = activeCount === allModulesList.length;
 
-  // Construct real authenticated user profile with Firestore badge
+  // Construct authenticated user profile with Firestore badge
   const user: UserProfile = useMemo(() => {
     if (!firebaseUser && !userProfile) {
       return INITIAL_USER;
@@ -81,7 +85,10 @@ function AppContent() {
       firebaseUser?.displayName ||
       firebaseUser?.email?.split('@')[0] ||
       'Usuário';
-    const email = userProfile?.email || firebaseUser?.email || '';
+    const email =
+      userProfile?.email ||
+      firebaseUser?.email ||
+      '';
     const photoURL = userProfile?.photoURL || firebaseUser?.photoURL || '';
 
     const initials =
@@ -103,8 +110,8 @@ function AppContent() {
       : 'Sem Módulos Ativos';
 
     return {
-      id: firebaseUser?.uid || 'USR_FIREBASE',
-      uid: firebaseUser?.uid,
+      id: firebaseUser?.uid || 'USR_CURRENT',
+      uid: firebaseUser?.uid || 'USR_CURRENT',
       name,
       email,
       initials,
@@ -117,8 +124,8 @@ function AppContent() {
     };
   }, [firebaseUser, userProfile, hasAllModules, hasBase, activeCount]);
 
-  // Loading state while verifying Firebase session
-  if (loading) {
+  // Loading state while verifying Firebase session or checking accesses
+  if (loading || (firebaseUser && loadingAccesses && userAccesses.length === 0)) {
     return (
       <div className="min-h-screen bg-[#08080a] text-[#ededf0] flex items-center justify-center font-sans antialiased p-4">
         <div className="w-full max-w-xs bg-[#0c0c10] border border-[#1e1e28] rounded-2xl p-6 text-center space-y-4 shadow-2xl">
@@ -129,7 +136,7 @@ function AppContent() {
             <h2 className="text-sm font-bold uppercase tracking-wider text-white">
               Base Visual da Musculação
             </h2>
-            <p className="text-xs text-zinc-500">Carregando seu acesso...</p>
+            <p className="text-xs text-zinc-500">Verificando permissões...</p>
           </div>
           <Loader2 size={24} className="animate-spin text-[#e50914] mx-auto" />
         </div>
@@ -140,6 +147,27 @@ function AppContent() {
   // Protected route: unauthenticated users view the Login screen
   if (!firebaseUser) {
     return <LoginView />;
+  }
+
+  // Gatekeeping: require APP_ACCESS to enter the App version
+  if (!hasAppAccess) {
+    return (
+      <>
+        <AppUpgradeRequiredView
+          userEmail={user.email}
+          userName={user.name}
+          onRefreshAccesses={refreshAccesses}
+          onLogout={logout}
+          onOpenHelp={() => setIsFeedbackOpen(true)}
+        />
+        <FeedbackModal
+          isOpen={isFeedbackOpen}
+          onClose={() => setIsFeedbackOpen(false)}
+          defaultName={user.name}
+          defaultEmail={user.email}
+        />
+      </>
+    );
   }
 
   // Calculate high level counts
@@ -427,6 +455,9 @@ function AppContent() {
 
         {/* Persistent Bottom Navigation Bar across all screens */}
         <BottomNav currentTab={currentTab} onSelectTab={handleSelectTab} />
+
+        {/* Discreet PWA Service Worker Update Notification */}
+        <PWAUpdateToast />
 
         {/* Modals */}
         <FeedbackModal
