@@ -25,7 +25,7 @@
         "moduleId": { "type": "string", "description": "Identificador do módulo (BASE, TREINOS30, PACK48, PROGRAMA8, TREINOSDIA, NUTRICAO)" },
         "active": { "type": "boolean", "description": "Status ativo da permissão" },
         "createdAt": { "type": "timestamp", "description": "Data de concessão" },
-        "source": { "type": "string", "description": "Origem da concessão (ex: yampi_webhook, manual_admin)" }
+        "source": { "type": "string", "description": "Origem da concessão (ex: manual, yampi, admin_dev)" }
       }
     }
   ]

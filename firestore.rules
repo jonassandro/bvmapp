@@ -11,6 +11,7 @@ service cloud.firestore {
     // Production lock: Clients CANNOT create, update or delete user_access. Only Firebase Admin SDK (Yampi Webhook) can write.
     match /user_access/{accessId} {
       allow read: if request.auth != null && (
+        resource == null ||
         resource.data.userId == request.auth.uid ||
         (request.auth.token.email != null && resource.data.email == request.auth.token.email)
       );
