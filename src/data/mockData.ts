@@ -20,20 +20,20 @@ export const APP_CONFIG: AppConfig = {
   pdfBaseUrl: 'https://drive.google.com/file/d/1m7GaV-M3p4zC15NtmMZL22x1PujaNsqQ/view?usp=drivesdk',
   totalExercises: 149,
   totalVideos: 23,
-  supportEmail: 'suporte@basevisualdamusculacao.com',
+  supportEmail: 'felipelevantese@gmail.com',
 };
 
 // ==========================================
 // ABA 2: USUARIOS (Perfil & Usuário Autenticado)
 // ==========================================
 export const INITIAL_USER: UserProfile = {
-  id: 'USR_VISITOR',
-  name: 'Visitante',
-  email: '',
-  initials: 'V',
-  badge: 'Sem Módulos Ativos',
+  id: 'USR001',
+  name: 'Felipe Levantese',
+  email: 'felipelevantese@gmail.com',
+  initials: 'FL',
+  badge: 'Acesso modular',
   fullAccess: false,
-  active: false,
+  active: true,
 };
 
 export const USERS: UserProfile[] = [INITIAL_USER];
@@ -3031,8 +3031,8 @@ export const FEEDBACK_SUBMISSIONS: FeedbackSubmission[] = [
     id: 'FB001',
     type: 'Sugestão',
     message: 'Excelente catálogo! Seria ótimo ter filtro por tipo de equipamento.',
-    name: 'Membro da Base',
-    email: 'membro@exemplo.com',
+    name: 'Felipe Levantese',
+    email: 'felipelevantese@gmail.com',
     createdAt: '2025-01-10T14:30:00Z',
   },
 ];

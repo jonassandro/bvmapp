@@ -15,7 +15,7 @@ export const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({
   onClose,
   material,
   exerciseRef,
-  hasAccess = false,
+  hasAccess = true,
 }) => {
   const [opening, setOpening] = useState(false);
 

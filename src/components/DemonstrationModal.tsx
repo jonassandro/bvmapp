@@ -23,7 +23,7 @@ type VideoAspectMode = 'fit' | '16:9' | '9:16' | 'window';
 export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
   exercise,
   onClose,
-  hasAccess = false,
+  hasAccess = true,
 }) => {
   const [aspectMode, setAspectMode] = useState<VideoAspectMode>('fit');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -224,7 +224,7 @@ export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
             >
               Fechar
             </button>
-            {hasAccess && exercise.videoUrl && (
+            {exercise.videoUrl && (
               <a
                 id="btn-open-drive-video"
                 href={exercise.videoUrl}
