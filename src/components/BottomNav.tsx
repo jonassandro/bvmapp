@@ -18,12 +18,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
   return (
     <nav
       id="bottom-navigation"
-      role="navigation"
-      aria-label="Navegação Principal"
-      className="fixed bottom-0 left-0 right-0 z-40 bg-[#120907] border-t border-[#2D2421]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="fixed bottom-0 left-0 right-0 z-40 bg-[#0c0c10]/95 backdrop-blur-xl border-t border-[#23232d] pb-safe shadow-2xl"
     >
-      <div className="max-w-md mx-auto px-2 py-1 flex items-center justify-around">
+      <div className="max-w-md mx-auto px-3 py-2 flex items-center justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
@@ -32,16 +29,23 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
             <button
               key={tab.id}
               id={`nav-tab-${tab.id}`}
-              type="button"
               onClick={() => onSelectTab(tab.id)}
-              className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-colors active:scale-95 ${
+              className={`flex flex-col items-center justify-center transition-all duration-200 min-h-[48px] min-w-[56px] py-1.5 px-3 rounded-xl cursor-pointer ${
                 isActive
-                  ? 'text-[#CC0000] bg-[#1A1412]'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-[#15151e] text-white border border-[#2b2b38] shadow-md shadow-red-950/20'
+                  : 'text-zinc-400 hover:text-zinc-200 active:scale-95'
               }`}
             >
-              <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
-              <span className={`text-[10px] mt-1 font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-zinc-400'}`}>
+              <Icon
+                size={20}
+                strokeWidth={isActive ? 2.4 : 1.8}
+                className={isActive ? 'text-[#e50914]' : 'text-zinc-400'}
+              />
+              <span
+                className={`text-[10px] mt-1 uppercase tracking-wider font-bold ${
+                  isActive ? 'text-white' : 'text-zinc-400'
+                }`}
+              >
                 {tab.label}
               </span>
             </button>

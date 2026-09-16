@@ -1,18 +1,14 @@
-/**
- * Utility to normalize strings for accent-insensitive and case-insensitive searching
- */
-export function normalizeSearchTerm(str: string): string {
-  if (!str) return '';
-  return str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
-}
-
-export function matchesSearch(text: string, query: string): boolean {
+export function matchesSearch(
+  source: string | null | undefined,
+  query: string | null | undefined
+): boolean {
   if (!query) return true;
-  const normalizedText = normalizeSearchTerm(text);
-  const normalizedQuery = normalizeSearchTerm(query);
-  return normalizedText.includes(normalizedQuery);
+  if (!source) return false;
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  return normalize(String(source)).includes(normalize(String(query)));
 }

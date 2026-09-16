@@ -11,10 +11,14 @@ import {
   ChevronRight,
   FileSpreadsheet,
   Image as ImageIcon,
-  FileText,
-  Mail,
+  Sparkles,
+  ExternalLink,
+  Smartphone,
 } from 'lucide-react';
 import { UserProfile, Material } from '../types';
+import { getMaterialMeta } from '../data/contentCovers';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { IOSInstallModal } from './IOSInstallModal';
 
 interface ProfileViewProps {
   user: UserProfile;
@@ -37,8 +41,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshSuccess, setRefreshSuccess] = useState(false);
+  const [isIOSModalOpen, setIsIOSModalOpen] = useState(false);
+  const [androidNotice, setAndroidNotice] = useState<string | null>(null);
 
-  // Filtrar apenas materiais que o usuário possui acesso ativo
+  const { isStandalone, isIOS, canInstallNative, install } = usePWAInstall();
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      setIsIOSModalOpen(true);
+      return;
+    }
+
+    if (canInstallNative) {
+      await install();
+    } else {
+      setAndroidNotice('No menu do navegador (⋮), toque em "Instalar aplicativo" ou "Adicionar à tela inicial".');
+      setTimeout(() => setAndroidNotice(null), 5000);
+    }
+  };
+
+
+  // Todos os materiais ativos do catálogo ficam liberados para qualquer usuário logado
   const myUnlockedMaterials = materials.filter((m) => {
     const isVisible =
       m.Visivel_Catalogo === true ||
@@ -50,13 +73,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       m.Ativo === 'SIM' ||
       m.Ativo === 'sim' ||
       m.active === true;
-    if (!isVisible || !isActive) return false;
-
-    const modId = m.ModuloID || m.moduleId;
-    return hasAccess(modId);
+    return isVisible && isActive;
   });
 
   const hasBaseAccess = hasAccess('BASE');
+  const allModulesList = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO'];
+  const activeCount = allModulesList.filter((m) => hasAccess(m)).length;
+  const hasAll = activeCount === allModulesList.length;
 
   const handleRefresh = async () => {
     if (!onRefreshAccesses || isRefreshing) return;
@@ -75,193 +98,211 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const getItemIcon = (material: Material) => {
     const type = material.Tipo || material.type;
-    if (type === 'Planilha') return <FileSpreadsheet size={16} className="text-emerald-400" />;
-    if (type === 'Imagem') return <ImageIcon size={16} className="text-amber-400" />;
-    return <FileText size={16} className="text-[#CC0000]" />;
+    if (type === 'Planilha') return <FileSpreadsheet size={15} className="text-emerald-400" />;
+    if (type === 'Imagem') return <ImageIcon size={15} className="text-amber-400" />;
+    return <BookOpen size={15} className="text-zinc-400" />;
   };
 
-  const modulesList = [
-    { id: 'BASE', name: 'Base Visual (149 Exercícios)', desc: 'Guia oficial e vídeos' },
-    { id: 'TREINOS30', name: 'Treinos de 30 Minutos', desc: 'Rotinas express eficientes' },
-    { id: 'PACK48', name: 'Pack de 48 Fichas Prontas', desc: 'Treinos para cada objetivo' },
-    { id: 'PROGRAMA8', name: 'Programa de 8 Semanas', desc: 'Periodização completa' },
-    { id: 'TREINOSDIA', name: 'Treinos por Dia da Semana', desc: 'Divisões de 3 a 6 dias' },
-    { id: 'NUTRICAO', name: 'Módulo Nutrição Esportiva', desc: 'Estratégias nutricionais' },
-  ];
-
   return (
-    <div id="profile-view" className="space-y-4 pb-8 animate-in fade-in duration-200">
-      {/* Top Header */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-white uppercase leading-none">
-          Perfil do Aluno
-        </h1>
-        <p className="text-[11px] text-zinc-400 mt-0.5">
-          Gerenciamento de conta e permissões de acesso
-        </p>
+    <div id="profile-view" className="space-y-5 pb-12 animate-in fade-in duration-200">
+      {/* Header */}
+      <div className="pt-1">
+        <h1 className="text-xl font-bold tracking-tight text-white uppercase">Meu Perfil</h1>
       </div>
 
-      {/* User Info Card */}
-      <div className="bg-[#120907] border border-[#2D2421] rounded-2xl p-5 shadow-xl space-y-4">
-        <div className="flex items-center gap-3.5">
-          {user.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={user.name}
-              referrerPolicy="no-referrer"
-              className="w-13 h-13 rounded-xl object-cover border border-[#2D2421]"
-            />
-          ) : (
-            <div className="w-13 h-13 rounded-xl bg-[#CC0000] flex items-center justify-center font-extrabold text-white text-lg shadow-sm">
-              {user.initials}
-            </div>
-          )}
+      {/* User Information Card */}
+      <div className="bg-[#0f0f14] border border-[#23232d] rounded-2xl p-4.5 flex items-center gap-3.5 shadow-xl">
+        {user.photoURL ? (
+          <img
+            id="profile-user-avatar"
+            src={user.photoURL}
+            alt={user.name}
+            referrerPolicy="no-referrer"
+            className="w-13 h-13 rounded-full object-cover border-2 border-red-500/30 shrink-0 shadow-md"
+          />
+        ) : (
+          <div className="w-13 h-13 rounded-full bg-gradient-to-br from-[#1c1c28] to-[#121218] border border-[#2e2e3e] flex items-center justify-center text-white font-extrabold text-sm shrink-0 shadow-md">
+            {user.initials || <UserIcon size={20} />}
+          </div>
+        )}
 
-          <div className="space-y-1 min-w-0 flex-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white uppercase truncate">
-                {user.name}
-              </h2>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider bg-green-500/10 border-green-500/20 text-green-400">
-                {user.badge || 'Acesso Total'}
-              </span>
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-white uppercase tracking-tight truncate">
+              {user.name}
+            </h2>
+          </div>
+          <p className="text-xs text-zinc-400 truncate">{user.email}</p>
+          <div className="pt-0.5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <ShieldCheck size={11} />
+              <span>Acesso Total</span>
             </div>
-
-            <p className="text-xs text-zinc-400 flex items-center gap-1.5 truncate">
-              <Mail size={12} className="text-zinc-500 shrink-0" />
-              <span>{user.email}</span>
-            </p>
           </div>
         </div>
-
-        {/* Action: Sincronizar Perfil */}
-        {onRefreshAccesses && (
-          <div className="pt-2 border-t border-[#2D2421] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-400">
-              Sincronizar dados da sua conta?
-            </span>
-            <button
-              id="btn-sync-access"
-              type="button"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#CC0000] hover:text-[#ff3333] uppercase tracking-wider disabled:opacity-50 transition-colors"
-            >
-              <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
-              <span>{isRefreshing ? 'Sincronizando...' : 'Atualizar Dados'}</span>
-            </button>
-          </div>
-        )}
-
-        {refreshSuccess && (
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2 text-center text-xs text-green-400 font-bold">
-            Dados sincronizados com sucesso!
-          </div>
-        )}
       </div>
 
-      {/* Módulos do Sistema e Permissões */}
-      <div className="bg-[#120907] border border-[#2D2421] rounded-2xl p-4 shadow-xl space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-            Status dos Módulos
-          </h3>
-          <span className="text-[10px] text-green-400 font-bold uppercase font-mono">
-            Todos os Módulos Liberados
+      {/* Meus Conteúdos Liberados */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+            Meus Conteúdos Liberados
+          </h2>
+          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+            {myUnlockedMaterials.length} disponíveis
           </span>
         </div>
 
-        <div className="space-y-2">
-          {modulesList.map((mod) => (
-            <div
-              key={mod.id}
-              className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-3 flex items-center justify-between gap-3"
-            >
-              <div className="space-y-0.5 min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold text-[#CC0000]">
-                    {mod.id}
-                  </span>
-                  <span className="text-xs font-bold text-white uppercase truncate">
-                    {mod.name}
-                  </span>
-                </div>
-                <p className="text-[11px] text-zinc-400">{mod.desc}</p>
-              </div>
+        {myUnlockedMaterials.length > 0 ? (
+          <div className="bg-[#111116] border border-[#23232d] rounded-2xl divide-y divide-[#23232d] overflow-hidden shadow-xl">
+            {myUnlockedMaterials.map((material) => {
+              const matId = material.ID || material.id;
+              const meta = getMaterialMeta(matId, material.ModuloID || material.moduleId);
 
-              <div className="shrink-0">
-                <span className="inline-flex items-center gap-1 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                  <CheckCircle2 size={11} />
-                  <span>Liberado</span>
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Meus Materiais Disponíveis */}
-      {myUnlockedMaterials.length > 0 && (
-        <div className="space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
-            Meus Materiais ({myUnlockedMaterials.length})
-          </h3>
-
-          <div className="space-y-2">
-            {myUnlockedMaterials.map((mat) => (
-              <div
-                key={mat.ID || mat.id}
-                onClick={() => onSelectMaterial(mat)}
-                className="bg-[#1A1412] border border-[#2D2421] hover:border-[#CC0000]/60 rounded-xl p-3 flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-[0.99] group"
-              >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <div className="w-7 h-7 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center shrink-0">
-                    {getItemIcon(mat)}
+              return (
+                <div
+                  key={matId}
+                  id={`my-content-${matId}`}
+                  onClick={() => onSelectMaterial(material)}
+                  className="p-3.5 flex items-center justify-between gap-3 hover:bg-[#181822] transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative w-12 h-10 rounded-lg overflow-hidden bg-black/50 border border-[#262634] shrink-0">
+                      <img
+                        src={meta.coverUrl}
+                        alt={material.Titulo || material.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-bold text-white uppercase truncate">
+                        {material.Titulo || material.title}
+                      </h3>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 truncate">
+                        {material.descricaoCurta || material.subtitle || material.Tipo || material.type}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs font-bold text-white uppercase truncate block group-hover:text-red-300">
-                      {mat.Titulo || mat.title}
+
+                  <div className="shrink-0 flex items-center gap-1.5 text-zinc-400">
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      Disponível
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
-                      {mat.Tipo || mat.type} · {mat.ModuloID || mat.moduleId}
-                    </span>
+                    <ChevronRight size={14} className="text-zinc-500" />
                   </div>
                 </div>
-
-                <ChevronRight size={15} className="text-zinc-500 group-hover:text-white shrink-0" />
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
-      )}
-
-      {/* Opções de Conta / Suporte e Logout */}
-      <div className="space-y-2 pt-1">
-        <button
-          id="btn-suporte-ajuda"
-          type="button"
-          onClick={onOpenHelp}
-          className="w-full bg-[#1A1412] hover:bg-[#221a17] active:scale-[0.99] border border-[#2D2421] text-zinc-300 hover:text-white p-3.5 rounded-xl flex items-center justify-between text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-2.5">
-            <HelpCircle size={16} className="text-[#CC0000]" />
-            <span>Suporte e Dúvidas Frequentes</span>
+        ) : (
+          <div className="bg-[#111116] border border-[#23232d] rounded-2xl p-4 text-xs text-zinc-400 space-y-1 shadow-md">
+            <p className="font-semibold text-zinc-300">Nenhum conteúdo liberado no momento</p>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">
+              Caso tenha acabado de confirmar seu pagamento, toque em "Atualizar acesso" abaixo para sincronizar seus conteúdos.
+            </p>
           </div>
-          <ChevronRight size={15} className="text-zinc-500" />
-        </button>
-
-        {onLogout && (
-          <button
-            id="btn-sair-conta"
-            type="button"
-            onClick={onLogout}
-            className="w-full bg-[#1A1412] hover:bg-red-950/20 active:scale-[0.99] border border-red-500/20 text-red-400 p-3.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
-          >
-            <LogOut size={15} />
-            <span>Sair da Conta</span>
-          </button>
         )}
       </div>
+
+      {/* Ações: Atualizar Acesso e Suporte */}
+      <div className="space-y-2.5 pt-1">
+        <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider px-1">
+          Acesso e Suporte
+        </label>
+
+        {/* Botão Instalar Base Visual (apenas quando não estiver instalado em modo standalone) */}
+        {!isStandalone && (
+          <div className="space-y-1.5">
+            <button
+              id="btn-install-pwa"
+              type="button"
+              onClick={handleInstallClick}
+              className="w-full bg-[#111116] hover:bg-[#181822] active:scale-[0.99] border border-[#2e2e3e] hover:border-red-500/50 text-zinc-100 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-colors">
+                  <Smartphone size={14} />
+                </div>
+                <span>Instalar Base Visual</span>
+              </div>
+              <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider flex items-center gap-1 group-hover:text-red-300">
+                <span>Instalar</span>
+                <ChevronRight size={14} />
+              </span>
+            </button>
+
+            {androidNotice && (
+              <p className="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 leading-tight">
+                {androidNotice}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Botão Atualizar Acesso */}
+        <button
+          id="btn-refresh-access"
+          type="button"
+          disabled={isRefreshing}
+          onClick={handleRefresh}
+          className="w-full bg-[#111116] hover:bg-[#16161d] active:scale-[0.99] border border-[#23232d] hover:border-zinc-700 text-zinc-200 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md disabled:opacity-50 cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5">
+            <RefreshCw
+              size={16}
+              className={`text-[#e50914] ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+            <span>{isRefreshing ? 'Atualizando acesso...' : 'Atualizar acesso'}</span>
+          </div>
+          {refreshSuccess ? (
+            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+              <CheckCircle2 size={13} />
+              <span>Sincronizado</span>
+            </span>
+          ) : (
+            <ChevronRight size={14} className="text-zinc-500" />
+          )}
+        </button>
+
+        {/* Botão Ajuda / Suporte */}
+        <button
+          id="btn-help-support"
+          type="button"
+          onClick={onOpenHelp}
+          className="w-full bg-[#111116] hover:bg-[#16161d] active:scale-[0.99] border border-[#23232d] hover:border-zinc-700 text-zinc-200 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5">
+            <HelpCircle size={16} className="text-zinc-400" />
+            <span>Ajuda / Suporte</span>
+          </div>
+          <ChevronRight size={14} className="text-zinc-500" />
+        </button>
+      </div>
+
+      {/* iOS Installation Instructions Modal */}
+      <IOSInstallModal
+        isOpen={isIOSModalOpen}
+        onClose={() => setIsIOSModalOpen(false)}
+      />
+
+      {/* Logout Action */}
+      {onLogout && (
+        <div className="pt-2">
+          <button
+            id="btn-logout"
+            type="button"
+            onClick={onLogout}
+            className="w-full bg-[#111116] hover:bg-red-500/10 border border-[#23232d] hover:border-red-500/40 text-zinc-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-between transition-all shadow-md cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <LogOut size={16} />
+              <span>Sair da conta</span>
+            </div>
+            <ChevronRight size={14} className="text-zinc-600" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

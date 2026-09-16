@@ -31,7 +31,6 @@ export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
 
   if (!exercise) return null;
 
-
   const handleToggleFullscreen = () => {
     if (!playerContainerRef.current) return;
 
@@ -155,46 +154,32 @@ export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
           id="video-player-container"
           className={`relative w-full bg-black flex items-center justify-center overflow-hidden transition-all duration-200 ${getAspectClass()}`}
         >
-          {hasAccess ? (
-            exercise.videoUrl ? (
-              exercise.videoUrl.includes('drive.google.com') ? (
-                <iframe
-                  id="exercise-video-iframe"
-                  src={exercise.videoUrl.replace(/\/view(\?.*)?$/, '/preview')}
-                  title={exercise.name}
-                  className="w-full h-full border-0"
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                />
-              ) : (
-                <video
-                  id="exercise-video-player"
-                  controls
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-contain"
-                  src={exercise.videoUrl}
-                >
-                  Seu navegador não suporta a reprodução deste vídeo.
-                </video>
-              )
+          {exercise.videoUrl ? (
+            exercise.videoUrl.includes('drive.google.com') ? (
+              <iframe
+                id="exercise-video-iframe"
+                src={exercise.videoUrl.replace(/\/view(\?.*)?$/, '/preview')}
+                title={exercise.name}
+                className="w-full h-full border-0"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+              />
             ) : (
-              <div className="text-center p-6 space-y-2 text-zinc-500">
-                <Play size={32} className="mx-auto text-zinc-600" />
-                <p className="text-xs">Vídeo demonstrativo preparado para streaming</p>
-              </div>
+              <video
+                id="exercise-video-player"
+                controls
+                autoPlay
+                playsInline
+                className="w-full h-full object-contain"
+                src={exercise.videoUrl}
+              >
+                Seu navegador não suporta a reprodução deste vídeo.
+              </video>
             )
           ) : (
-            <div className="text-center p-6 space-y-3 text-zinc-400">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto text-red-400">
-                <Lock size={24} />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white uppercase">Vídeo Bloqueado</h4>
-                <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  A visualização deste vídeo é exclusiva para membros com a Base Visual liberada.
-                </p>
-              </div>
+            <div className="text-center p-6 space-y-2 text-zinc-500">
+              <Play size={32} className="mx-auto text-zinc-600" />
+              <p className="text-xs">Vídeo demonstrativo preparado para streaming</p>
             </div>
           )}
         </div>
@@ -224,7 +209,7 @@ export const DemonstrationModal: React.FC<DemonstrationModalProps> = ({
             >
               Fechar
             </button>
-            {exercise.videoUrl && (
+            {hasAccess && exercise.videoUrl && (
               <a
                 id="btn-open-drive-video"
                 href={exercise.videoUrl}

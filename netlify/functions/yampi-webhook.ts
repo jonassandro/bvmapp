@@ -5,15 +5,31 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 /**
- * Mapeamento oficial e estrito de SKU Yampi -> moduleId da nova oferta
+ * Mapeamento oficial e estrito de SKU Yampi -> moduleId da plataforma
+ * Suporta produto principal e order bumps em um único pedido.
  */
 const SKU_TO_MODULE_MAP: Record<string, string> = {
-  '2GWE9VK2T': 'BASE',
+  // Produto Principal Base Visual da Musculação (concede exclusivamente BASE)
+  'T8WHX8Q9Y': 'BASE',
+
+  // Upgrade para a versão Aplicativo (concede exclusivamente APP_ACCESS)
+  '2GWE9VK2T': 'APP_ACCESS',
+  'DRSWSBGC8': 'APP_ACCESS',
+
+  // Módulos Complementares e Order Bumps (SKUs novos)
+  'WYL7AJYEX': 'PACK48',     // COMBO 48 TREINOS PRONTOS
+  'FSV5KT9K3': 'TREINOSDIA', // Treinos Montados Para Sua Rotina
+  'QAVSZH4SW': 'PROGRAMA8',  // Programa Completo de 8 Semanas
+  'SXS4A37PY': 'NUTRICAO',   // NUTRIÇÃO PRÉ E PÓS TREINO
+  '76ZG3Q9E': 'TREINOS30',   // PACK DE TREINOS DE 30 MIN
+
+  // Módulos Complementares e Order Bumps (SKUs anteriores preservados)
   'EPA42N3F7': 'PACK48',
   'HP9CNGR7F': 'TREINOSDIA',
   '8NWZZ8SL6': 'PROGRAMA8',
   'Y5UNWY2C7': 'TREINOS30',
   'Z8GMW9GJA': 'NUTRICAO',
+  // NOTA: O SKU '3PK47XQ9L' é expressamente ignorado e não deve ser adicionado aqui.
 };
 
 let isFirebaseInitialized = false;
@@ -120,10 +136,12 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
     };
   }
 
-  // 2. Obter segredo da variável de ambiente
+  // 2. Obter segredos das variáveis de ambiente (suporte a múltiplas lojas Yampi)
   const webhookSecret = process.env.YAMPI_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error('YAMPI_WEBHOOK_SECRET não configurado no ambiente.');
+  const appWebhookSecret = process.env.YAMPI_APP_WEBHOOK_SECRET;
+
+  if (!webhookSecret && !appWebhookSecret) {
+    console.error('Nenhum segredo Yampi configurado no ambiente (YAMPI_WEBHOOK_SECRET ou YAMPI_APP_WEBHOOK_SECRET).');
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -140,9 +158,16 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
   const signature = getHeader(event.headers, 'X-Yampi-Hmac-SHA256');
 
   // 4. Validar assinatura HMAC-SHA256
-  const isValid = verifyYampiSignature(rawBody, signature, webhookSecret);
+  // Tenta validar primeiro com YAMPI_WEBHOOK_SECRET; se inválida, tenta com YAMPI_APP_WEBHOOK_SECRET
+  let isValid = false;
+  if (webhookSecret && verifyYampiSignature(rawBody, signature, webhookSecret)) {
+    isValid = true;
+  } else if (appWebhookSecret && verifyYampiSignature(rawBody, signature, appWebhookSecret)) {
+    isValid = true;
+  }
+
   if (!isValid) {
-    console.warn('Assinatura Yampi inválida ou ausente.');
+    console.warn('Assinatura Yampi inválida ou ausente para os secrets configurados.');
     return {
       statusCode: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -189,9 +214,27 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
   const normalizedEmail = customerEmail.trim().toLowerCase();
   const orderId = String(payload?.resource?.id || payload?.resource?.number || 'desconhecido');
 
-  // 8. Obter todos os itens do pedido
-  const items = payload?.resource?.items?.data;
-  if (!Array.isArray(items) || items.length === 0) {
+  // 8. Obter todos os itens do pedido (suporta produto principal e order bumps)
+  const items: any[] = [];
+  if (Array.isArray(payload?.resource?.items?.data)) {
+    items.push(...payload.resource.items.data);
+  } else if (Array.isArray(payload?.resource?.items)) {
+    items.push(...payload.resource.items);
+  }
+
+  // Suporte complementar caso a Yampi envie order bumps em chaves dedicadas
+  if (Array.isArray(payload?.resource?.order_bumps?.data)) {
+    items.push(...payload.resource.order_bumps.data);
+  } else if (Array.isArray(payload?.resource?.order_bumps)) {
+    items.push(...payload.resource.order_bumps);
+  }
+  if (Array.isArray(payload?.resource?.bumps?.data)) {
+    items.push(...payload.resource.bumps.data);
+  } else if (Array.isArray(payload?.resource?.bumps)) {
+    items.push(...payload.resource.bumps);
+  }
+
+  if (items.length === 0) {
     return {
       statusCode: 400,
       headers: { 'Content-Type': 'application/json' },
@@ -201,18 +244,59 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
     };
   }
 
-  // 9. Mapear SKUs para moduleIds oficiais (suporta produto principal + order bumps)
+  // Diagnóstico seguro de SKUs recebidos (item_sku, sku string ou fallback sku.data.sku)
+  const skusRecebidos = items.map((item: any) => {
+    const rawSku = (
+      item?.item_sku ||
+      (typeof item?.sku === 'string' ? item.sku : item?.sku?.data?.sku) ||
+      ''
+    )
+      .toString()
+      .trim()
+      .toUpperCase();
+
+    return {
+      item_sku: item?.item_sku || null,
+      fallback_sku: typeof item?.sku === 'string' ? item.sku : item?.sku?.data?.sku || null,
+      resolved_sku: rawSku || null,
+      usedFallback: !item?.item_sku && (!!item?.sku || !!item?.sku?.data?.sku),
+    };
+  });
+
+  // 9. Mapear SKUs para moduleIds oficiais (percorre TODOS os itens do pedido sem parar no primeiro)
+  const mappingResults: Array<{ sku: string; moduleId: string | null }> = [];
+  const ignoredSkus: string[] = [];
   const modulesToGrant = new Map<string, { sku: string; moduleId: string }>();
 
   for (const item of items) {
-    const rawSku = (item.item_sku || item.sku?.data?.sku || '').toString().trim().toUpperCase();
+    const rawSku = (
+      item?.item_sku ||
+      (typeof item?.sku === 'string' ? item.sku : item?.sku?.data?.sku) ||
+      ''
+    )
+      .toString()
+      .trim()
+      .toUpperCase();
+
     if (!rawSku) continue;
 
     const moduleId = SKU_TO_MODULE_MAP[rawSku];
     if (moduleId) {
       modulesToGrant.set(moduleId, { sku: rawSku, moduleId });
+      mappingResults.push({ sku: rawSku, moduleId });
+    } else {
+      ignoredSkus.push(rawSku);
+      mappingResults.push({ sku: rawSku, moduleId: null });
     }
   }
+
+  // Logs temporários de diagnóstico Yampi
+  console.log('[YAMPI] orderId:', orderId);
+  console.log('[YAMPI] email:', normalizedEmail);
+  console.log('[YAMPI] skus recebidos:', skusRecebidos);
+  console.log('[YAMPI] mapeamento:', mappingResults);
+  console.log('[YAMPI] modulos liberados:', modulesToGrant);
+  console.log('[YAMPI] skus ignorados:', ignoredSkus);
 
   if (modulesToGrant.size === 0) {
     return {

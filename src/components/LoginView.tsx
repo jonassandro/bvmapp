@@ -93,7 +93,7 @@ export const LoginView: React.FC = () => {
     }
   };
 
-  // Google Auth
+  // Secondary Google login
   const handleGoogleLogin = async () => {
     setValidationError(null);
     clearError();
@@ -108,70 +108,76 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#EAEAEA] flex justify-center items-center font-sans antialiased p-4">
+    <div className="min-h-screen bg-[#08080a] text-[#ededf0] flex justify-center font-sans antialiased">
       <main
         id="login-container"
-        className="w-full max-w-sm bg-[#120907] border border-[#2D2421] rounded-2xl p-6 shadow-2xl space-y-5"
+        className="w-full max-w-md min-h-screen bg-[#0c0c10] shadow-2xl relative flex flex-col justify-between border-x border-[#1e1e28] p-5 sm:p-6"
       >
-        {/* Brand Header */}
-        <div className="text-center space-y-3 pt-2">
-          <div className="w-12 h-12 bg-[#CC0000] rounded-xl flex items-center justify-center font-extrabold text-white text-2xl mx-auto shadow-sm">
-            B
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-base font-bold tracking-tight uppercase text-white leading-tight">
-              Base Visual <span className="text-[#CC0000]">da Musculação</span>
+        {/* Top Brand Header */}
+        <div className="space-y-5 pt-4">
+          <div>
+            <span className="text-[10px] font-bold text-zinc-400 tracking-wider uppercase block">
+              Plataforma Digital
+            </span>
+            <h1 className="text-sm font-bold tracking-tight uppercase text-white">
+              Base Visual <span className="text-[#e50914]">da Musculação</span>
             </h1>
-            <p className="text-xs text-zinc-400">
-              Entre ou cadastre-se com seu e-mail para acessar todos os conteúdos e guias
+          </div>
+
+          <div className="space-y-1.5">
+            <h2 className="text-2xl font-bold tracking-tight text-white uppercase">
+              Acesse sua conta
+            </h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Consulte a biblioteca completa de exercícios, vídeos demonstrativos e guias práticos de execução técnica.
             </p>
           </div>
-        </div>
 
-        {/* Value Prop Card */}
-        <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-3.5 space-y-2.5">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#CC0000]/10 text-[#CC0000] flex items-center justify-center shrink-0">
-              <Dumbbell size={14} />
+          {/* Quick value props list */}
+          <div className="bg-[#13131a] border border-[#1e1e28] rounded-2xl p-3.5 space-y-2.5 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#0c0c10] border border-[#23232d] flex items-center justify-center text-[#e50914] shrink-0">
+                <Dumbbell size={16} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-white uppercase">Exercícios Catalogados</h3>
+                <p className="text-[11px] text-zinc-400">Páginas oficiais e grupamentos musculares</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-white uppercase">149 Exercícios Ilustrados</h3>
-              <p className="text-[11px] text-zinc-400">Com referência direta às páginas do livro</p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#CC0000]/10 text-[#CC0000] flex items-center justify-center shrink-0">
-              <PlayCircle size={14} />
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#0c0c10] border border-[#23232d] flex items-center justify-center text-[#e50914] shrink-0">
+                <PlayCircle size={16} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-white uppercase">Demonstrações em Vídeo</h3>
+                <p className="text-[11px] text-zinc-400">Player otimizado e ajustado sem cortes</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-white uppercase">Demonstrações em Vídeo</h3>
-              <p className="text-[11px] text-zinc-400">Execução técnica passo a passo</p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#CC0000]/10 text-[#CC0000] flex items-center justify-center shrink-0">
-              <BookOpen size={14} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-white uppercase">Materiais e Fichas</h3>
-              <p className="text-[11px] text-zinc-400">Acesso aos PDFs e planilhas oficiais</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#0c0c10] border border-[#23232d] flex items-center justify-center text-[#e50914] shrink-0">
+                <BookOpen size={16} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-white uppercase">Materiais e Manuais</h3>
+                <p className="text-[11px] text-zinc-400">Acesso direto ao guia visual oficial</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Action Section */}
-        <div className="space-y-3.5">
+        <div className="space-y-4 py-5">
           {/* Error Message */}
           {(error || validationError) && (
             <div
               id="login-error-alert"
-              className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs text-red-300 flex items-start gap-2.5"
+              className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-300 flex items-start gap-2.5 animate-in fade-in"
             >
-              <AlertCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
+              <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-red-200 uppercase text-[10px] tracking-wider">Atenção</p>
+                <p className="font-semibold text-red-200">Atenção</p>
                 <p className="text-[11px] text-red-300/90 mt-0.5 leading-relaxed">
                   {validationError || error}
                 </p>
@@ -188,79 +194,108 @@ export const LoginView: React.FC = () => {
             </div>
           )}
 
-          {/* Pending Email Confirmation state */}
+          {/* Pending Email Confirmation state (User opened magic link in a new browser) */}
           {isEmailLinkPending ? (
             <div
               id="confirm-email-link-card"
-              className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3 shadow-md animate-in fade-in"
+              className="bg-[#13131a] border border-[#1e1e28] rounded-2xl p-4 space-y-3.5 shadow-md animate-in fade-in"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wider">
-                  <Mail size={15} className="text-[#CC0000]" />
+                  <Mail size={16} className="text-[#e50914]" />
                   <span>Concluir acesso por link</span>
                 </div>
                 <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Confirme seu e-mail para validar o link seguro de acesso:
+                  Detectamos que você abriu um link de acesso. Por segurança, confirme o seu e-mail para finalizar:
                 </p>
               </div>
 
               <form onSubmit={handleConfirmEmailLink} className="space-y-3">
-                <input
-                  id="input-confirm-email"
-                  type="email"
-                  value={confirmEmail}
-                  onChange={(e) => setConfirmEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  autoComplete="email"
-                  className="w-full bg-[#120907] border border-[#2D2421] focus:border-[#CC0000] text-white text-xs rounded-xl px-3.5 py-2.5 outline-none transition-colors placeholder:text-zinc-500"
-                />
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="input-confirm-email"
+                    className="block text-[11px] font-bold text-zinc-300 uppercase tracking-wider"
+                  >
+                    E-mail usado na compra
+                  </label>
+                  <input
+                    id="input-confirm-email"
+                    type="email"
+                    value={confirmEmail}
+                    onChange={(e) => setConfirmEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    autoComplete="email"
+                    className="w-full bg-[#0c0c10] border border-[#23232d] focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914] text-white text-xs rounded-xl px-3.5 py-3 outline-none transition-colors placeholder:text-zinc-600"
+                  />
+                </div>
 
                 <button
                   id="btn-confirm-access-link"
                   type="submit"
                   disabled={isConfirmingLink}
-                  className="w-full bg-[#CC0000] hover:bg-[#b30000] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full bg-[#e50914] hover:bg-[#b80710] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isConfirmingLink ? (
                     <>
-                      <Loader2 size={15} className="animate-spin text-white" />
+                      <Loader2 size={16} className="animate-spin text-white" />
                       <span>Validando acesso...</span>
                     </>
                   ) : (
-                    <span>Concluir Acesso</span>
+                    <>
+                      <span>Concluir Acesso</span>
+                      <ArrowRight size={15} />
+                    </>
                   )}
                 </button>
               </form>
             </div>
           ) : emailLinkSentTo ? (
-            /* Link Sent Confirmation */
+            /* Link Sent Confirmation State */
             <div
-              id="magic-link-sent-card"
-              className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 space-y-3 animate-in fade-in"
+              id="link-sent-confirmation-card"
+              className="bg-[#13131a] border border-green-500/30 rounded-2xl p-4 space-y-3.5 shadow-md animate-in fade-in"
             >
-              <div className="flex items-center gap-2 text-green-400 font-bold text-xs uppercase tracking-wider">
-                <CheckCircle2 size={15} />
-                <span>Link Enviado com Sucesso</span>
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 shrink-0 mt-0.5">
+                  <CheckCircle2 size={20} />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-tight">
+                    Enviamos seu link de acesso. Verifique seu e-mail.
+                  </h3>
+                  <p className="text-[11px] text-zinc-300 leading-relaxed">
+                    Um link de acesso direto sem senha foi enviado para{' '}
+                    <span className="font-semibold text-white break-all">{emailLinkSentTo}</span>.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-                Enviamos um link de login para: <strong className="text-white font-mono">{emailLinkSentTo}</strong>
-              </p>
+
+              <div className="bg-[#0c0c10] p-3 rounded-xl border border-[#23232d] text-[11px] text-zinc-400 leading-relaxed space-y-1">
+                <p className="text-zinc-300 font-semibold">Como acessar:</p>
+                <ol className="list-decimal list-inside space-y-0.5 text-zinc-400">
+                  <li>Abra o aplicativo de e-mail no seu celular ou computador;</li>
+                  <li>Localize a mensagem da Base Visual da Musculação;</li>
+                  <li>Toque no link de login para entrar automaticamente.</li>
+                </ol>
+              </div>
+
               <div className="flex gap-2 pt-1">
                 <button
                   id="btn-resend-link"
                   onClick={() => handleSendLink({ preventDefault: () => {} } as any)}
                   disabled={isSendingLink}
-                  className="flex-1 bg-[#1A1412] hover:bg-[#251d1a] border border-[#2D2421] text-zinc-300 text-[11px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
+                  className="flex-1 bg-[#0c0c10] hover:bg-[#1a1a24] border border-[#23232d] text-zinc-300 text-[11px] font-bold uppercase tracking-wider py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
                 >
                   <RefreshCw size={12} className={isSendingLink ? 'animate-spin' : ''} />
-                  <span>Reenviar</span>
+                  <span>{isSendingLink ? 'Reenviando...' : 'Reenviar link'}</span>
                 </button>
+
                 <button
                   id="btn-use-other-email"
                   onClick={resetLinkSent}
-                  className="flex-1 bg-[#1A1412] hover:bg-[#251d1a] border border-[#2D2421] text-zinc-400 text-[11px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg transition-colors cursor-pointer"
+                  className="flex-1 bg-[#0c0c10] hover:bg-[#1a1a24] border border-[#23232d] text-zinc-400 text-[11px] font-bold uppercase tracking-wider py-2.5 px-3 rounded-xl transition-colors cursor-pointer"
                 >
-                  Outro e-mail
+                  Usar outro e-mail
                 </button>
               </div>
             </div>
@@ -272,11 +307,11 @@ export const LoginView: React.FC = () => {
                   htmlFor="input-purchase-email"
                   className="block text-[11px] font-bold text-zinc-300 uppercase tracking-wider"
                 >
-                  Seu E-mail
+                  E-mail usado na compra
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                    <Mail size={14} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <Mail size={15} />
                   </div>
                   <input
                     id="input-purchase-email"
@@ -286,26 +321,29 @@ export const LoginView: React.FC = () => {
                     placeholder="seu@email.com"
                     autoComplete="email"
                     disabled={isSendingLink}
-                    className="w-full bg-[#1A1412] border border-[#2D2421] focus:border-[#CC0000] text-white text-xs rounded-xl pl-9 pr-3.5 py-3 outline-none transition-colors placeholder:text-zinc-500 disabled:opacity-60"
+                    className="w-full bg-[#13131a] border border-[#23232d] focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914] text-white text-xs rounded-xl pl-10 pr-3.5 py-3.5 outline-none transition-colors placeholder:text-zinc-600 disabled:opacity-60"
                   />
                 </div>
+                <p className="text-[10px] text-zinc-500">
+                  O acesso é liberado por link seguro sem senha enviado para o seu e-mail.
+                </p>
               </div>
 
               <button
                 id="btn-send-access-link"
                 type="submit"
                 disabled={isSendingLink}
-                className="w-full bg-[#CC0000] hover:bg-[#b30000] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full bg-[#e50914] hover:bg-[#b80710] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSendingLink ? (
                   <>
-                    <Loader2 size={15} className="animate-spin text-white" />
-                    <span>Enviando link seguro...</span>
+                    <Loader2 size={16} className="animate-spin text-white" />
+                    <span>Enviando link de acesso...</span>
                   </>
                 ) : (
                   <>
-                    <span>Enviar Link de Acesso</span>
-                    <ArrowRight size={14} />
+                    <span>ENVIAR LINK DE ACESSO</span>
+                    <ArrowRight size={15} />
                   </>
                 )}
               </button>
@@ -314,23 +352,23 @@ export const LoginView: React.FC = () => {
 
           {/* Divider */}
           <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-[#2D2421]"></div>
+            <div className="flex-grow border-t border-[#1e1e28]"></div>
             <span className="flex-shrink mx-3 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
               ou continue com
             </span>
-            <div className="flex-grow border-t border-[#2D2421]"></div>
+            <div className="flex-grow border-t border-[#1e1e28]"></div>
           </div>
 
-          {/* Google Login Button */}
+          {/* Secondary Google Login Button */}
           <button
             id="btn-login-google"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading || isSendingLink}
-            className="w-full bg-[#1A1412] hover:bg-[#251d1a] active:scale-[0.99] border border-[#2D2421] text-zinc-200 font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full bg-[#13131a] hover:bg-[#1a1a24] active:scale-[0.99] border border-[#23232d] text-zinc-200 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
             {isGoogleLoading ? (
               <>
-                <Loader2 size={15} className="animate-spin text-zinc-300" />
+                <Loader2 size={16} className="animate-spin text-zinc-300" />
                 <span>Autenticando com Google...</span>
               </>
             ) : (
@@ -358,10 +396,17 @@ export const LoginView: React.FC = () => {
             )}
           </button>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-500 pt-1">
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-500 pt-0.5">
             <Shield size={12} className="text-zinc-500" />
             <span>Autenticação criptografada via Firebase</span>
           </div>
+        </div>
+
+        {/* Footer Info */}
+        <div className="text-center pt-2 pb-2">
+          <p className="text-[10px] text-zinc-600 leading-relaxed max-w-xs mx-auto">
+            O e-mail informado será utilizado para identificar seus conteúdos e módulos liberados.
+          </p>
         </div>
       </main>
     </div>

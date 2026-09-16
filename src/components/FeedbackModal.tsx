@@ -1,34 +1,24 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle2 } from 'lucide-react';
-import { FeedbackSubmission } from '../types';
+import { X, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultName: string;
-  defaultEmail: string;
+  defaultName?: string;
+  defaultEmail?: string;
 }
-
-const FEEDBACK_TYPES: FeedbackSubmission['type'][] = [
-  'Sugestão',
-  'Erro encontrado',
-  'Pedido de novo exercício',
-  'Problema com vídeo',
-  'Problema com acesso',
-  'Outro',
-];
 
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   isOpen,
   onClose,
-  defaultName,
-  defaultEmail,
+  defaultName = '',
+  defaultEmail = '',
 }) => {
-  const [type, setType] = useState<FeedbackSubmission['type']>('Sugestão');
+  const [type, setType] = useState('Sugestão');
   const [message, setMessage] = useState('');
   const [name, setName] = useState(defaultName);
   const [email, setEmail] = useState(defaultEmail);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   if (!isOpen) return null;
 
@@ -36,132 +26,137 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     e.preventDefault();
     if (!message.trim()) return;
 
-    // Simulate saving locally
-    const newFeedback: FeedbackSubmission = {
-      id: 'FB' + Date.now(),
-      type,
-      message,
-      name,
-      email,
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      const stored = localStorage.getItem('bmv_feedback');
-      const list = stored ? JSON.parse(stored) : [];
-      list.push(newFeedback);
-      localStorage.setItem('bmv_feedback', JSON.stringify(list));
-    } catch {
-      // ignore
-    }
-
-    setIsSubmitted(true);
+    setSubmitted(true);
     setTimeout(() => {
-      setIsSubmitted(false);
+      setSubmitted(false);
       setMessage('');
       onClose();
-    }, 1800);
+    }, 2000);
   };
 
   return (
     <div
-      id="feedback-modal-overlay"
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+      id="feedback-modal-backdrop"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
-        id="feedback-modal"
-        className="w-full max-w-md bg-[#120907] border border-[#2D2421] rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 shadow-2xl"
+        id="feedback-modal-card"
+        className="w-full max-w-md bg-[#111116] border border-[#23232d] rounded-2xl p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150"
       >
-        <div className="flex items-center justify-between border-b border-[#2D2421] pb-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Enviar feedback</h2>
+        <div className="flex items-center justify-between pb-1 border-b border-[#1e1e28]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-[#262634] flex items-center justify-center text-[#e50914]">
+              <MessageSquare size={16} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white uppercase tracking-tight">
+                Enviar Feedback
+              </h2>
+              <p className="text-[11px] text-zinc-400">Sugestões, dúvidas ou elogios</p>
+            </div>
+          </div>
           <button
-            id="btn-close-feedback"
+            id="btn-close-feedback-modal"
             onClick={onClose}
-            className="text-zinc-400 hover:text-white p-1 rounded-lg"
+            className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-[#1a1a24] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
-        {isSubmitted ? (
-          <div className="py-8 text-center space-y-3">
-            <CheckCircle2 size={42} className="text-green-500 mx-auto animate-bounce" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Feedback recebido!</h3>
-            <p className="text-xs text-zinc-400">
-              Obrigado por ajudar a aprimorar a Base Visual da Musculação.
+        {submitted ? (
+          <div className="py-8 text-center space-y-3 animate-in fade-in">
+            <CheckCircle2 size={40} className="text-emerald-400 mx-auto" />
+            <h3 className="text-sm font-bold text-white uppercase">Feedback Enviado!</h3>
+            <p className="text-xs text-zinc-400 max-w-xs mx-auto">
+              Muito obrigado por sua mensagem. Nossa equipe de desenvolvimento agradece sua contribuição.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-                Tipo de feedback
+              <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                Tipo de Feedback
               </label>
-              <select
-                id="feedback-type-select"
-                value={type}
-                onChange={(e) => setType(e.target.value as FeedbackSubmission['type'])}
-                className="w-full bg-[#1A1412] border border-[#2D2421] rounded-xl px-3 py-2.5 text-[#EAEAEA] focus:outline-none focus:border-[#CC0000] transition-colors"
-              >
-                {FEEDBACK_TYPES.map((t) => (
-                  <option key={t} value={t} className="bg-[#120907] text-white">
-                    {t}
-                  </option>
+              <div className="grid grid-cols-4 gap-1.5">
+                {['Sugestão', 'Dúvida', 'Problema', 'Outro'].map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setType(item)}
+                    className={`py-1.5 text-[11px] font-bold uppercase rounded-lg border transition-all cursor-pointer ${
+                      type === item
+                        ? 'bg-[#e50914]/15 border-[#e50914] text-white'
+                        : 'bg-[#161620] border-[#23232d] text-zinc-400 hover:text-zinc-200'
+                    }`}
+                  >
+                    {item}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-                Mensagem *
+              <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                Sua Mensagem
               </label>
               <textarea
-                id="feedback-message-input"
-                required
-                rows={4}
+                id="input-feedback-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Descreva detalhadamente sua sugestão ou observação..."
-                className="w-full bg-[#1A1412] border border-[#2D2421] rounded-xl p-3 text-[#EAEAEA] placeholder-zinc-500 focus:outline-none focus:border-[#CC0000] resize-none transition-colors"
+                placeholder="Descreva sua sugestão ou comentário..."
+                rows={4}
+                required
+                className="w-full bg-[#161620] border border-[#23232d] focus:border-[#e50914] text-white text-xs rounded-xl p-3 outline-none transition-colors placeholder:text-zinc-600 resize-none"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-                  Nome
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Seu Nome
                 </label>
                 <input
-                  id="feedback-name-input"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#1A1412] border border-[#2D2421] rounded-xl px-3 py-2 text-[#EAEAEA] focus:outline-none focus:border-[#CC0000] transition-colors"
+                  placeholder="Nome"
+                  className="w-full bg-[#161620] border border-[#23232d] text-white text-xs rounded-xl px-3 py-2 outline-none"
                 />
               </div>
-
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-                  E-mail
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Seu E-mail
                 </label>
                 <input
-                  id="feedback-email-input"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#1A1412] border border-[#2D2421] rounded-xl px-3 py-2 text-[#EAEAEA] focus:outline-none focus:border-[#CC0000] transition-colors"
+                  placeholder="email@exemplo.com"
+                  className="w-full bg-[#161620] border border-[#23232d] text-white text-xs rounded-xl px-3 py-2 outline-none"
                 />
               </div>
             </div>
 
-            <button
-              id="btn-submit-feedback"
-              type="submit"
-              className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-widest py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 mt-2"
-            >
-              <Send size={14} />
-              <span>Enviar Feedback</span>
-            </button>
+            <div className="pt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2.5 rounded-xl border border-[#23232d] text-zinc-400 hover:text-white text-xs font-bold uppercase transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-[#e50914] hover:bg-[#b80710] text-white text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+              >
+                <Send size={14} />
+                <span>Enviar</span>
+              </button>
+            </div>
           </form>
         )}
       </div>

@@ -2,32 +2,28 @@ import React from 'react';
 import {
   BookOpen,
   ShieldCheck,
-  Lock,
   ChevronRight,
-  ShieldAlert,
   ExternalLink,
   FileSpreadsheet,
   Image as ImageIcon,
-  FileText,
 } from 'lucide-react';
 import { Material, CatalogItem } from '../types';
+import { getMaterialMeta } from '../data/contentCovers';
 
 interface ContentsViewProps {
   materials: Material[];
   catalogItems?: CatalogItem[];
-  hasAccess: (moduleId: string) => boolean;
+  hasAccess?: (moduleId: string) => boolean;
   onSelectMaterial: (material: Material) => void;
   onAccessDirectMaterial?: (material: Material) => void;
-  onSelectLockedItem: (item: CatalogItem) => void;
+  onSelectLockedItem?: (item: CatalogItem) => void;
   onGoToProfile: () => void;
 }
 
 export const ContentsView: React.FC<ContentsViewProps> = ({
   materials,
-  hasAccess,
   onSelectMaterial,
   onAccessDirectMaterial,
-  onSelectLockedItem,
   onGoToProfile,
 }) => {
   // Visivel_Catalogo e Ativo definem visibilidade no catálogo
@@ -41,22 +37,6 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
 
   const activeMaterials = materials.filter(isMaterialCatalogActive);
 
-  // Acesso controlado estritamente pelo ModuloID
-  const releasedMaterials = activeMaterials.filter((m) => {
-    const modId = m.ModuloID || m.moduleId;
-    return hasAccess(modId);
-  });
-
-  const lockedMaterials = activeMaterials.filter((m) => {
-    const modId = m.ModuloID || m.moduleId;
-    return !hasAccess(modId);
-  });
-
-  const hasBase = hasAccess('BASE');
-  const allCount = 6;
-  const activeCount = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO'].filter(hasAccess).length;
-  const allUnlocked = activeCount === allCount;
-
   const handleAccessClick = (e: React.MouseEvent, material: Material) => {
     e.stopPropagation();
     if (onAccessDirectMaterial) {
@@ -66,120 +46,137 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
     }
   };
 
-  const handleUnlockClick = (e: React.MouseEvent, material: Material) => {
-    e.stopPropagation();
-    const modId = material.ModuloID || material.moduleId;
-    onSelectLockedItem({
-      id: `LOCKED_${material.ID || material.id}`,
-      title: material.Titulo || material.title,
-      category: material.Categoria || material.category || material.tag || 'Material Complementar',
-      type: material.Tipo || material.type || 'Material Digital',
-      moduleId: modId,
-      permissionName: 'Conteúdo Adicional',
-      status: 'Bloqueado',
-      isLockedDefault: true,
-    });
-  };
-
   const getItemIcon = (material: Material) => {
     const type = material.Tipo || material.type;
     if (type === 'Planilha') return <FileSpreadsheet size={16} className="text-emerald-400" />;
     if (type === 'Imagem') return <ImageIcon size={16} className="text-amber-400" />;
-    return <FileText size={16} className="text-[#CC0000]" />;
+    return <BookOpen size={16} className="text-zinc-400" />;
   };
 
   return (
-    <div id="contents-view" className="space-y-4 pb-8 animate-in fade-in duration-200">
-      {/* Top Header & Counter */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-white uppercase leading-none">
-            Conteúdos
-          </h1>
-          <p className="text-[11px] text-zinc-400 mt-0.5">
-            Guias, fichas e planilhas de musculação
-          </p>
-        </div>
-        <span className="text-[11px] text-zinc-400 bg-[#1A1412] border border-[#2D2421] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-          {releasedMaterials.length} liberados
-        </span>
-      </div>
+    <div id="contents-view" className="space-y-6 pb-12 animate-in fade-in duration-200">
+      {/* Top Header Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f14] border border-[#262632] p-5 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Banner de Status de Acesso */}
-      <div className="bg-[#120907] border border-[#2D2421] rounded-2xl p-4 space-y-2 shadow-xl">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#CC0000]/10 text-[#CC0000] flex items-center justify-center">
-              <BookOpen size={16} />
-            </div>
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
-                Materiais e Fichas do Aluno
-              </h2>
-              <p className="text-[11px] text-zinc-400">
-                Você possui acesso completo a todos os materiais, fichas e planilhas.
-              </p>
-            </div>
+            <span className="w-2 h-2 rounded-full bg-[#e50914]" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#e50914]">Conteúdos</h2>
           </div>
+
+          <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest flex items-center gap-1.5">
+            <ShieldCheck size={12} />
+            <span>Acesso Total Liberado</span>
+          </span>
         </div>
+
+        <h1 className="text-xl font-bold tracking-tight text-white uppercase">
+          Biblioteca de Conteúdos
+        </h1>
+
+        <p className="text-xs text-zinc-400 leading-relaxed mt-1">
+          Acesse todos os seus guias, planilhas e módulos complementares inclusos no app.
+        </p>
       </div>
 
-      {/* Lista de Materiais Liberados */}
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={14} className="text-green-400" />
-          <h2 className="text-xs font-bold uppercase tracking-wider text-green-400">
-            Materiais Disponíveis ({releasedMaterials.length})
-          </h2>
+      {/* ========================================================
+          CONTEÚDOS DISPONÍVEIS (TODOS LIBERADOS)
+         ======================================================== */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-4 rounded-full bg-emerald-500" />
+            <h2 className="text-xs uppercase font-bold text-white tracking-wider">
+              Conteúdos Liberados
+            </h2>
+          </div>
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            {activeMaterials.length} disponíveis
+          </span>
         </div>
 
-        {releasedMaterials.length === 0 ? (
-          <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 text-center text-xs text-zinc-500">
-            Nenhum conteúdo encontrado.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {releasedMaterials.map((mat) => (
-              <div
-                key={mat.ID || mat.id}
-                id={`unlocked-material-${mat.ID || mat.id}`}
-                onClick={() => onSelectMaterial(mat)}
-                className="bg-[#1A1412] border border-[#2D2421] hover:border-[#CC0000]/60 rounded-xl p-3.5 flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-[0.99] group shadow-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-8 h-8 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center shrink-0">
-                    {getItemIcon(mat)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-                        {mat.Categoria || mat.category || 'Material'}
-                      </span>
-                      <span className="text-zinc-600 text-[9px]">·</span>
-                      <span className="text-[9px] font-mono text-zinc-500 font-bold">
-                        {mat.Tipo || mat.type}
-                      </span>
-                    </div>
-                    <h3 className="text-xs font-bold text-white uppercase group-hover:text-red-300 transition-colors truncate">
-                      {mat.Titulo || mat.title}
-                    </h3>
-                  </div>
-                </div>
+        {activeMaterials.length > 0 ? (
+          <div className="grid grid-cols-1 gap-2.5">
+            {activeMaterials.map((material) => {
+              const matId = material.ID || material.id;
+              const isSpreadsheet = material.Tipo === 'Planilha' || material.type === 'Planilha';
+              const meta = getMaterialMeta(matId, material.ModuloID || material.moduleId);
 
-                <div className="flex items-center gap-2 shrink-0">
+              return (
+                <div
+                  key={matId}
+                  id={`material-card-${matId}`}
+                  onClick={() => onSelectMaterial(material)}
+                  className="group bg-[#111116] hover:bg-[#16161d] active:scale-[0.99] border border-[#23232e] hover:border-zinc-700/80 rounded-2xl p-3.5 flex items-center justify-between gap-3.5 cursor-pointer transition-all shadow-md"
+                >
+                  {/* Left: Thumbnail and info */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative w-16 h-14 rounded-xl overflow-hidden bg-black/50 border border-[#2b2b38] shrink-0">
+                      <img
+                        src={meta.coverUrl}
+                        alt={material.Titulo || material.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-1 right-1">
+                        {getItemIcon(material)}
+                      </div>
+                    </div>
+
+                    <div className="min-w-0">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 block truncate">
+                        {material.Categoria || material.category || meta.badge}
+                      </span>
+                      <h3 className="text-xs font-bold text-white uppercase tracking-tight truncate mt-0.5">
+                        {material.Titulo || material.title}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          Liberado
+                        </span>
+                        <span className="text-zinc-600 text-[10px]">·</span>
+                        <span className="text-[9px] text-zinc-400 font-medium">
+                          {material.Tipo || material.type}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Action Button */}
                   <button
                     type="button"
-                    onClick={(e) => handleAccessClick(e, mat)}
-                    className="bg-[#CC0000] hover:bg-[#b30000] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                    id={`btn-acessar-${matId}`}
+                    onClick={(e) => handleAccessClick(e, material)}
+                    className="text-[10px] font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 px-3 py-2 rounded-xl shrink-0 flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/40"
                   >
-                    Acessar
+                    {isSpreadsheet ? <ExternalLink size={12} /> : <BookOpen size={12} />}
+                    <span>Acessar</span>
                   </button>
-                  <ChevronRight size={15} className="text-zinc-500 group-hover:text-white" />
                 </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-[#111116] border border-[#23232e] rounded-2xl p-4 text-xs text-zinc-400 space-y-1 text-center">
+            <p className="font-semibold text-zinc-200">Nenhum conteúdo disponível no momento</p>
           </div>
         )}
+      </section>
+
+      {/* Link para Meu Perfil */}
+      <div className="pt-2 text-center">
+        <button
+          id="btn-ver-acesso-perfil"
+          type="button"
+          onClick={onGoToProfile}
+          className="text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white inline-flex items-center gap-1.5 transition-colors cursor-pointer py-1"
+        >
+          <span>Conferir todos os meus acessos no Perfil</span>
+          <ChevronRight size={14} />
+        </button>
       </div>
     </div>
   );

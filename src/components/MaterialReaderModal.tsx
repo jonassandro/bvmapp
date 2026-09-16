@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, ExternalLink, FileText, CheckCircle2, Lock, ShieldAlert } from 'lucide-react';
+import { X, BookOpen, ExternalLink, FileText, CheckCircle2 } from 'lucide-react';
 import { Material, Exercise } from '../types';
 
 interface MaterialReaderModalProps {
@@ -15,7 +15,6 @@ export const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({
   onClose,
   material,
   exerciseRef,
-  hasAccess = true,
 }) => {
   const [opening, setOpening] = useState(false);
 
@@ -29,7 +28,6 @@ export const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({
     : 'Guia Oficial de Treinamento';
 
   const handleOpenPdf = () => {
-    if (!hasAccess) return;
     setOpening(true);
     const targetUrl = material
       ? (material.URL || material.url || material.directLink)
@@ -73,61 +71,37 @@ export const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({
 
         {/* Content area */}
         <div className="p-5 space-y-4 overflow-y-auto">
-          {hasAccess ? (
-            <>
-              {/* Unlocked State */}
-              <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-green-400 uppercase tracking-wider">
-                  <CheckCircle2 size={16} />
-                  <span>Documento oficial liberado</span>
-                </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  O arquivo PDF oficial está sincronizado e pronto para visualização completa com ilustrações anatômicas e biomecânica.
-                </p>
-                {exerciseRef && (
-                  <div className="bg-[#120907] p-2.5 rounded-lg border border-[#2D2421] text-[11px] text-zinc-300 flex items-center gap-2">
-                    <FileText size={14} className="text-[#CC0000] shrink-0" />
-                    <span>Exercício localizado na <strong>Página {exerciseRef.pageNumber}</strong></span>
-                  </div>
-                )}
+          {/* Unlocked State */}
+          <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-green-400 uppercase tracking-wider">
+              <CheckCircle2 size={16} />
+              <span>Documento oficial liberado</span>
+            </div>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              O arquivo PDF oficial está sincronizado e pronto para visualização completa com ilustrações anatômicas e biomecânica.
+            </p>
+            {exerciseRef && (
+              <div className="bg-[#120907] p-2.5 rounded-lg border border-[#2D2421] text-[11px] text-zinc-300 flex items-center gap-2">
+                <FileText size={14} className="text-[#CC0000] shrink-0" />
+                <span>Exercício localizado na <strong>Página {exerciseRef.pageNumber}</strong></span>
               </div>
+            )}
+          </div>
 
-              <div className="space-y-2">
-                <button
-                  id="btn-confirm-open-pdf"
-                  onClick={handleOpenPdf}
-                  disabled={opening}
-                  className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-widest py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-75"
-                >
-                  <ExternalLink size={15} />
-                  <span>{opening ? 'Abrindo leitor...' : 'Abrir no Google Drive Oficial'}</span>
-                </button>
-                <p className="text-[10px] text-zinc-500 text-center">
-                  O documento será aberto em uma nova aba com zoom e navegação por páginas.
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Locked State: NO URL or private file provided */}
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-red-400 uppercase tracking-wider">
-                  <ShieldAlert size={16} />
-                  <span>Acesso ao Documento Bloqueado</span>
-                </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Este conteúdo não faz parte do seu acesso atual. A liberação ocorre automaticamente após a confirmação da compra.
-                </p>
-              </div>
-
-              <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl p-3.5 text-xs text-zinc-400 space-y-1">
-                <p className="text-zinc-300 font-semibold">Conteúdo Adicional</p>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Adquira este material complementar para liberar o acesso ao guia completo.
-                </p>
-              </div>
-            </>
-          )}
+          <div className="space-y-2">
+            <button
+              id="btn-confirm-open-pdf"
+              onClick={handleOpenPdf}
+              disabled={opening}
+              className="w-full bg-[#CC0000] hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-widest py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-950/40 disabled:opacity-75"
+            >
+              <ExternalLink size={15} />
+              <span>{opening ? 'Abrindo leitor...' : 'Abrir no Google Drive Oficial'}</span>
+            </button>
+            <p className="text-[10px] text-zinc-500 text-center">
+              O documento será aberto em uma nova aba com zoom e navegação por páginas.
+            </p>
+          </div>
         </div>
 
         {/* Footer */}

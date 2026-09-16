@@ -1,74 +1,94 @@
+export type TabType = 'inicio' | 'exercicios' | 'conteudos' | 'perfil';
+
+export type ValidModuleId =
+  | 'BASE'
+  | 'APP_ACCESS'
+  | 'TREINOS30'
+  | 'PACK48'
+  | 'PROGRAMA8'
+  | 'TREINOSDIA'
+  | 'NUTRICAO'
+  | 'BONUS_MELHORES'
+  | 'BONUS_CARGA'
+  | string;
+
 export interface Exercise {
-  id: string; // e.g. 'EX001'
-  name: string; // e.g. 'Supino reto com barra'
-  categoryId: 'peito' | 'costas' | 'ombros' | 'biceps' | 'triceps' | 'pernas' | 'core';
-  categoryName: string; // e.g. 'PEITO'
-  pageNumber: number | string; // e.g. 1, "141, 143", "48-49"
-  pdfBase?: string; // e.g. 'https://drive.google.com/file/d/1m7GaV-M3p4zC15NtmMZL22x1PujaNsqQ/view?usp=drivesdk'
-  moduleId: string; // e.g. 'BASE'
-  moduloId?: string; // e.g. 'BASE'
-  hasVideo: boolean;
-  active?: boolean;
-  videoId?: string; // e.g. 'VID002'
-  videoFileName?: string; // e.g. 'SUPINO RETO COM BARRA.mp4'
+  id: string;
+  name: string;
+  categoryId: string;
+  categoryName: string;
+  pageNumber: number | string;
+  pdfBase?: string;
+  moduleId?: string;
+  moduloId?: string;
+  hasVideo?: boolean;
+  videoId?: string;
   videoUrl?: string;
+  videoFileName?: string;
+  active?: boolean;
   order?: number;
   notes?: string;
+  executionSteps?: string[];
+  biomechanicsTips?: string[];
+  primaryMuscles?: string[];
+  secondaryMuscles?: string[];
+  commonMistakes?: string[];
+  image?: string;
+  [key: string]: any;
 }
 
 export interface Video {
-  id: string; // e.g. 'VID001'
-  exerciseId: string; // e.g. 'EX073'
-  exerciseName: string; // e.g. 'Rosca unilateral na polia'
-  group: string; // e.g. 'BÍCEPS'
-  videoUrl: string; // Google Drive url
-  fileName: string; // e.g. 'ROSCA UNILATERAL NA POLIA.mp4'
-  moduleId: string; // 'BASE'
-  active: boolean;
+  id: string;
+  exerciseId: string;
+  exerciseName: string;
+  group?: string;
+  videoUrl: string;
+  fileName?: string;
+  moduleId?: string;
+  active?: boolean;
+  [key: string]: any;
 }
 
 export interface Material {
-  // Colunas obrigatórias da aba Materiais
-  ID: string;
-  Titulo: string;
-  Categoria: string;
-  Tipo: string;
-  URL: string;
-  Ativo: boolean | string; // 'SIM' | 'NÃO' ou boolean
-  ModuloID: string; // e.g. 'BASE', 'TREINOS30', 'PACK48', etc.
-  Permissao_Necessaria: string;
-  Visivel_Catalogo: boolean | string; // 'SIM' | 'NÃO' ou boolean
-
-  // Propriedades compatíveis com o restante do front-end
-  id: string;
+  id?: string;
+  ID?: string;
   materialId?: string;
-  driveFileId?: string;
-  spreadsheetId?: string;
-  localAsset?: string;
-  title: string;
+  title?: string;
+  Titulo?: string;
   subtitle?: string;
-  tag?: string;
+  descricaoCurta?: string;
   category?: string;
-  type: string;
+  Categoria?: string;
+  tag?: string;
+  type?: string;
+  Tipo?: string;
   role?: string;
-  moduleId: string;
+  moduleId?: string;
   moduloId?: string;
+  ModuloID?: string;
+  arquivo?: string;
   permissionCode?: string;
+  Permissao_Necessaria?: string;
   mainFolder?: string;
   subFolder?: string;
   functionName?: string;
   isLockedDefault?: boolean;
-  directLink: string;
+  directLink?: string;
   url?: string;
+  URL?: string;
   previewUrl?: string;
   active?: boolean;
+  Ativo?: string | boolean;
   visibleInCatalog?: boolean;
-  arquivo?: string;
-  descricaoCurta?: string;
+  Visivel_Catalogo?: string | boolean;
+  driveFileId?: string;
+  localAsset?: string;
+  spreadsheetId?: string;
+  [key: string]: any;
 }
 
 export interface Category {
-  id: 'todos' | 'peito' | 'costas' | 'ombros' | 'biceps' | 'triceps' | 'pernas' | 'core';
+  id: string;
   name: string;
   groupCode?: string;
   order?: number;
@@ -76,13 +96,13 @@ export interface Category {
 }
 
 export interface CatalogItem {
-  id: string; // e.g. 'CAT001'
-  title: string; // e.g. 'Treinos de 30 minutos'
-  category: string; // e.g. 'Treinos'
-  type: string; // e.g. 'PDF'
-  moduleId: string; // e.g. 'TREINOS30'
-  permissionName: string; // e.g. 'TREINOS30'
-  status: 'Bloqueado' | 'Liberado';
+  id: string;
+  title: string;
+  category: string;
+  type: string;
+  moduleId: string;
+  permissionName: string;
+  status: string;
   isLockedDefault: boolean;
 }
 
@@ -93,40 +113,11 @@ export interface UserProfile {
   email: string;
   initials: string;
   photoURL?: string;
-  badge: string; // 'Acesso Base' | 'Acesso Total' | 'Acesso Modular'
-  fullAccess: boolean; // whether all modules are active
+  badge?: string;
+  fullAccess?: boolean;
   active?: boolean;
   createdAt?: any;
   lastLoginAt?: any;
-}
-
-export type ValidModuleId =
-  | 'BASE'
-  | 'TREINOS30'
-  | 'PACK48'
-  | 'PROGRAMA8'
-  | 'TREINOSDIA'
-  | 'NUTRICAO'
-  | 'APP_ACCESS';
-
-export const ALL_SYSTEM_MODULES: ValidModuleId[] = [
-  'BASE',
-  'TREINOS30',
-  'PACK48',
-  'PROGRAMA8',
-  'TREINOSDIA',
-  'NUTRICAO',
-  'APP_ACCESS',
-];
-
-export interface FirestoreUserAccess {
-  id?: string;
-  userId: string;
-  email: string;
-  moduleId: ValidModuleId | string;
-  active: boolean;
-  createdAt?: any;
-  source?: string;
 }
 
 export interface UserAccess {
@@ -134,23 +125,33 @@ export interface UserAccess {
   userId: string;
   moduleId: string;
   permissionName: string;
-  status: 'Liberado' | 'Bloqueado';
+  status: string;
   grantedAt?: string;
-  active?: boolean;
 }
 
+export interface FirestoreUserAccess {
+  id?: string;
+  userId?: string;
+  email?: string;
+  moduleId: string;
+  active: boolean;
+  permissionName?: string;
+  grantedAt?: any;
+  orderId?: string;
+  source?: string;
+}
 
 export interface ProductSKU {
   sku: string;
   name: string;
   moduleIds: string[];
-  type: 'Principal' | 'Combo' | 'Add-on' | 'Vitalício';
+  type: string;
   description: string;
 }
 
 export interface FeedbackSubmission {
   id: string;
-  type: 'Sugestão' | 'Erro encontrado' | 'Pedido de novo exercício' | 'Problema com vídeo' | 'Problema com acesso' | 'Outro';
+  type: string;
   message: string;
   name: string;
   email: string;
@@ -165,6 +166,3 @@ export interface AppConfig {
   totalVideos: number;
   supportEmail: string;
 }
-
-export type TabType = 'inicio' | 'exercicios' | 'conteudos' | 'perfil';
-
