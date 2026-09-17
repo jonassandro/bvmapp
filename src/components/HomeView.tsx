@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Sparkles,
   ExternalLink,
+  CalendarDays,
 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import { Material, TabType } from '../types';
@@ -99,6 +100,39 @@ export const HomeView: React.FC<HomeViewProps> = ({
           Consulte demonstrações em vídeo, técnica precisa dos exercícios e seus materiais oficiais.
         </p>
       </div>
+
+      {/* Montador de Treinos CTA Banner */}
+      {onNavigateTab && (
+        <div
+          id="home-workout-builder-cta"
+          onClick={() => onNavigateTab('treinos')}
+          className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#171114] via-[#14141e] to-[#111117] border border-[#2c2226] hover:border-[#e50914]/60 p-4 cursor-pointer transition-all shadow-lg active:scale-[0.99]"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#e50914] text-white flex items-center justify-center shrink-0 shadow-md shadow-red-950/50">
+                <CalendarDays size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-[#e50914]/20 text-[#e50914]">
+                    Novo Recurso
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-zinc-400">
+                    Montador de Treinos
+                  </span>
+                </div>
+                <h3 className="text-xs font-bold text-white group-hover:text-red-400 transition-colors">
+                  Gere sua ficha de treino personalizada
+                </h3>
+              </div>
+            </div>
+            <div className="p-2 rounded-xl bg-[#1c1c28] group-hover:bg-[#e50914] text-zinc-300 group-hover:text-white transition-all shrink-0">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Section Busca rápida */}
       <div className="bg-[#0f0f14] rounded-2xl border border-[#23232d] p-5 space-y-3.5 shadow-xl">

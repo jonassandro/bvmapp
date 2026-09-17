@@ -27,6 +27,19 @@
         "createdAt": { "type": "timestamp", "description": "Data de concessão" },
         "source": { "type": "string", "description": "Origem da concessão (ex: yampi_webhook, manual_admin)" }
       }
+    },
+    {
+      "name": "users/{userId}/workouts",
+      "description": "Treinos gerados e salvos pelos usuários no Montador de Treinos",
+      "documentId": "{workoutId}",
+      "fields": {
+        "title": { "type": "string", "description": "Título do treino salvo" },
+        "splitName": { "type": "string", "description": "Estrutura do split (ex: Upper / Lower)" },
+        "answers": { "type": "map", "description": "Respostas do formulário do Montador" },
+        "days": { "type": "array", "description": "Lista de dias e exercícios do treino" },
+        "createdAt": { "type": "timestamp", "description": "Data em que o treino foi gerado ou salvo" },
+        "updatedAt": { "type": "timestamp", "description": "Data da última modificação" }
+      }
     }
   ]
 }

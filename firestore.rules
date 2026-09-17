@@ -4,6 +4,11 @@ service cloud.firestore {
     // User profile: authenticated users can read and write only their own profile
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Workouts subcollection: user can manage their personal saved workouts
+      match /workouts/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Module access collection:

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Loader2, ShieldCheck } from 'lucide-react';
-import { TabType, Exercise, Material, CatalogItem, UserProfile } from './types';
+import { TabType, Exercise, Material, CatalogItem, UserProfile, WorkoutPlan } from './types';
 import {
   EXERCISES,
   MATERIALS,
@@ -22,11 +22,21 @@ import { ContentsView } from './components/ContentsView';
 import { ContentDetailView } from './components/ContentDetailView';
 import { MaterialViewer } from './components/MaterialViewer';
 import { ProfileView } from './components/ProfileView';
+import { WorkoutBuilderView } from './components/WorkoutBuilderView';
+import { WorkoutPlanView } from './components/WorkoutPlanView';
+import { MyWorkoutsView } from './components/MyWorkoutsView';
 import { FeedbackModal } from './components/FeedbackModal';
 import { LockedContentModal } from './components/LockedContentModal';
 import { DemonstrationModal } from './components/DemonstrationModal';
 import { MaterialReaderModal } from './components/MaterialReaderModal';
 import { PWAUpdateToast } from './components/PWAUpdateToast';
+import { generateWorkout } from './services/workoutEngine';
+import {
+  getUserWorkouts,
+  saveWorkoutToFirestore,
+  deleteWorkoutFromFirestore,
+  renameWorkoutInFirestore,
+} from './services/workoutStorage';
 
 function AppContent() {
   const {
@@ -42,6 +52,13 @@ function AppContent() {
 
   // Navigation tabs state
   const [currentTab, setCurrentTab] = useState<TabType>('inicio');
+
+  // Workout Builder State
+  const [workoutViewMode, setWorkoutViewMode] = useState<'builder' | 'plan' | 'my_workouts'>('builder');
+  const [currentWorkoutPlan, setCurrentWorkoutPlan] = useState<WorkoutPlan | null>(null);
+  const [savedWorkouts, setSavedWorkouts] = useState<WorkoutPlan[]>([]);
+  const [isSavingWorkout, setIsSavingWorkout] = useState(false);
+  const [hasSavedCurrentWorkout, setHasSavedCurrentWorkout] = useState(false);
 
   // Active detail views
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
@@ -109,6 +126,15 @@ function AppContent() {
     };
   }, [firebaseUser, userProfile]);
 
+  // Sincronizar treinos salvos quando o usuário autenticar
+  useEffect(() => {
+    if (firebaseUser?.uid) {
+      getUserWorkouts(firebaseUser.uid)
+        .then(setSavedWorkouts)
+        .catch((err) => console.warn('Aviso ao carregar treinos:', err));
+    }
+  }, [firebaseUser?.uid]);
+
   // Loading state while verifying Firebase session
   if (loading) {
     return (
@@ -133,6 +159,71 @@ function AppContent() {
   if (!firebaseUser) {
     return <LoginView />;
   }
+
+  // Workout Builder handlers
+  const handleWorkoutGenerated = (plan: WorkoutPlan) => {
+    setCurrentWorkoutPlan(plan);
+    setWorkoutViewMode('plan');
+    setHasSavedCurrentWorkout(false);
+  };
+
+  const handleRegenerateWorkout = () => {
+    if (!currentWorkoutPlan) return;
+    try {
+      const newPlan = generateWorkout(currentWorkoutPlan.answers);
+      setCurrentWorkoutPlan(newPlan);
+      setHasSavedCurrentWorkout(false);
+    } catch (err) {
+      console.error('Erro ao regenerar treino:', err);
+    }
+  };
+
+  const handleSaveWorkout = async (plan: WorkoutPlan) => {
+    if (!firebaseUser) return;
+    setIsSavingWorkout(true);
+    try {
+      await saveWorkoutToFirestore(firebaseUser.uid, plan);
+      setHasSavedCurrentWorkout(true);
+      const updated = await getUserWorkouts(firebaseUser.uid);
+      setSavedWorkouts(updated);
+    } catch (err) {
+      console.error('Erro ao salvar treino:', err);
+    } finally {
+      setIsSavingWorkout(false);
+    }
+  };
+
+  const handleDeleteWorkout = async (workoutId: string) => {
+    if (!firebaseUser) return;
+    await deleteWorkoutFromFirestore(firebaseUser.uid, workoutId);
+    setSavedWorkouts((prev) => prev.filter((w) => w.id !== workoutId));
+    if (currentWorkoutPlan?.id === workoutId) {
+      setCurrentWorkoutPlan(null);
+      setWorkoutViewMode('my_workouts');
+    }
+  };
+
+  const handleRenameWorkout = async (workoutId: string, newTitle: string) => {
+    if (!firebaseUser) return;
+    await renameWorkoutInFirestore(firebaseUser.uid, workoutId, newTitle);
+    setSavedWorkouts((prev) =>
+      prev.map((w) => (w.id === workoutId ? { ...w, title: newTitle } : w))
+    );
+    if (currentWorkoutPlan?.id === workoutId) {
+      setCurrentWorkoutPlan((prev) => (prev ? { ...prev, title: newTitle } : null));
+    }
+  };
+
+  const handleOpenSavedWorkout = (workout: WorkoutPlan) => {
+    setCurrentWorkoutPlan(workout);
+    setWorkoutViewMode('plan');
+    setHasSavedCurrentWorkout(true);
+  };
+
+  const handleViewWorkoutExercise = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    setCurrentTab('exercicios');
+  };
 
   // Calculate high level counts
   const totalExercises = EXERCISES.length;
@@ -294,6 +385,41 @@ function AppContent() {
               onViewAllExercises={handleViewAllExercises}
               onNavigateTab={handleSelectTab}
             />
+          )}
+
+          {currentTab === 'treinos' && (
+            <>
+              {workoutViewMode === 'builder' && (
+                <WorkoutBuilderView
+                  onWorkoutGenerated={handleWorkoutGenerated}
+                  onOpenSavedWorkouts={() => setWorkoutViewMode('my_workouts')}
+                  savedWorkoutsCount={savedWorkouts.length}
+                />
+              )}
+
+              {workoutViewMode === 'plan' && currentWorkoutPlan && (
+                <WorkoutPlanView
+                  plan={currentWorkoutPlan}
+                  onBack={() => setWorkoutViewMode('builder')}
+                  onRegenerate={handleRegenerateWorkout}
+                  onSave={handleSaveWorkout}
+                  onViewExercise={handleViewWorkoutExercise}
+                  onUpdatePlan={(updated) => setCurrentWorkoutPlan(updated)}
+                  isSaving={isSavingWorkout}
+                  hasSaved={hasSavedCurrentWorkout}
+                />
+              )}
+
+              {workoutViewMode === 'my_workouts' && (
+                <MyWorkoutsView
+                  workouts={savedWorkouts}
+                  onOpenWorkout={handleOpenSavedWorkout}
+                  onDeleteWorkout={handleDeleteWorkout}
+                  onRenameWorkout={handleRenameWorkout}
+                  onCreateNew={() => setWorkoutViewMode('builder')}
+                />
+              )}
+            </>
           )}
 
           {currentTab === 'exercicios' && (

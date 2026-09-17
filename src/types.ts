@@ -1,4 +1,4 @@
-export type TabType = 'inicio' | 'exercicios' | 'conteudos' | 'perfil';
+export type TabType = 'inicio' | 'treinos' | 'exercicios' | 'conteudos' | 'perfil';
 
 export type ValidModuleId =
   | 'BASE'
@@ -166,3 +166,48 @@ export interface AppConfig {
   totalVideos: number;
   supportEmail: string;
 }
+
+export type WorkoutObjective = 'hipertrofia' | 'forca' | 'condicionamento' | 'equilibrado';
+export type WorkoutFrequency = 2 | 3 | 4 | 5 | 6;
+export type WorkoutDuration = 'ate_30' | '30_45' | '45_60' | 'mais_60';
+export type WorkoutLevel = 'iniciante' | 'intermediario' | 'avancado';
+export type WorkoutLocation = 'academia_completa' | 'academia_simples' | 'casa';
+
+export interface WorkoutAnswers {
+  objetivo: WorkoutObjective;
+  frequencia: WorkoutFrequency;
+  duracao: WorkoutDuration;
+  nivel: WorkoutLevel;
+  local: WorkoutLocation;
+  prioridades: string[];
+}
+
+export interface WorkoutExerciseItem {
+  exerciseId: string;
+  exerciseName: string;
+  categoryName: string;
+  categoryId: string;
+  sets: number;
+  reps: string;
+  restSeconds: number;
+  notes: string;
+}
+
+export interface WorkoutDay {
+  dayId: string;
+  dayName: string;
+  targetMuscles: string[];
+  exercises: WorkoutExerciseItem[];
+}
+
+export interface WorkoutPlan {
+  id: string;
+  title: string;
+  splitName: string;
+  createdAt: string;
+  updatedAt?: string;
+  answers: WorkoutAnswers;
+  days: WorkoutDay[];
+  notes?: string;
+}
+
