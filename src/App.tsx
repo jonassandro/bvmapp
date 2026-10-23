@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Loader2, ShieldCheck } from 'lucide-react';
-import { TabType, Exercise, Material, CatalogItem, UserProfile, WorkoutPlan } from './types';
+import React, { useState, useMemo } from 'react';
+import { Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { TabType, Exercise, Material, CatalogItem, UserProfile } from './types';
 import {
   EXERCISES,
   MATERIALS,
@@ -20,23 +20,11 @@ import { ExercisesView } from './components/ExercisesView';
 import { ExerciseDetailView } from './components/ExerciseDetailView';
 import { ContentsView } from './components/ContentsView';
 import { ContentDetailView } from './components/ContentDetailView';
-import { MaterialViewer } from './components/MaterialViewer';
 import { ProfileView } from './components/ProfileView';
-import { WorkoutBuilderView } from './components/WorkoutBuilderView';
-import { WorkoutPlanView } from './components/WorkoutPlanView';
-import { MyWorkoutsView } from './components/MyWorkoutsView';
 import { FeedbackModal } from './components/FeedbackModal';
 import { LockedContentModal } from './components/LockedContentModal';
 import { DemonstrationModal } from './components/DemonstrationModal';
 import { MaterialReaderModal } from './components/MaterialReaderModal';
-import { PWAUpdateToast } from './components/PWAUpdateToast';
-import { generateWorkout } from './services/workoutEngine';
-import {
-  getUserWorkouts,
-  saveWorkoutToFirestore,
-  deleteWorkoutFromFirestore,
-  renameWorkoutInFirestore,
-} from './services/workoutStorage';
 
 function AppContent() {
   const {
@@ -44,26 +32,17 @@ function AppContent() {
     userProfile,
     userAccesses,
     hasAccess,
-    refreshAccesses,
+    grantModuleDev,
     loading,
-    loadingAccesses,
     logout,
   } = useAuth();
 
   // Navigation tabs state
   const [currentTab, setCurrentTab] = useState<TabType>('inicio');
 
-  // Workout Builder State
-  const [workoutViewMode, setWorkoutViewMode] = useState<'builder' | 'plan' | 'my_workouts'>('builder');
-  const [currentWorkoutPlan, setCurrentWorkoutPlan] = useState<WorkoutPlan | null>(null);
-  const [savedWorkouts, setSavedWorkouts] = useState<WorkoutPlan[]>([]);
-  const [isSavingWorkout, setIsSavingWorkout] = useState(false);
-  const [hasSavedCurrentWorkout, setHasSavedCurrentWorkout] = useState(false);
-
   // Active detail views
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
-  const [activeViewingMaterial, setActiveViewingMaterial] = useState<Material | null>(null);
 
   // Search and Category filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,10 +62,13 @@ function AppContent() {
     exerciseRef: null,
   });
 
-  // Access checks - Todo usuário logado possui acesso total
-  const hasBase = true;
+  // Access checks
+  const hasBase = hasAccess('BASE');
+  const allModulesList = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO', 'SHAPE90'];
+  const activeCount = allModulesList.filter((m) => hasAccess(m)).length;
+  const hasAllModules = activeCount === allModulesList.length;
 
-  // Construct authenticated user profile with Firestore badge
+  // Construct real authenticated user profile with Firestore badge
   const user: UserProfile = useMemo(() => {
     if (!firebaseUser && !userProfile) {
       return INITIAL_USER;
@@ -97,10 +79,7 @@ function AppContent() {
       firebaseUser?.displayName ||
       firebaseUser?.email?.split('@')[0] ||
       'Usuário';
-    const email =
-      userProfile?.email ||
-      firebaseUser?.email ||
-      '';
+    const email = userProfile?.email || firebaseUser?.email || '';
     const photoURL = userProfile?.photoURL || firebaseUser?.photoURL || '';
 
     const initials =
@@ -111,45 +90,46 @@ function AppContent() {
         .map((n: string) => n[0].toUpperCase())
         .join('') || 'U';
 
+    const calculatedBadge = hasAllModules
+      ? 'Acesso Total'
+      : hasBase
+      ? activeCount > 1
+        ? `Base + ${activeCount - 1} Módulos`
+        : 'Acesso Base Visual'
+      : activeCount > 0
+      ? `${activeCount} Módulo(s) Ativo(s)`
+      : 'Sem Módulos Ativos';
+
     return {
-      id: firebaseUser?.uid || 'USR_CURRENT',
-      uid: firebaseUser?.uid || 'USR_CURRENT',
+      id: firebaseUser?.uid || 'USR_FIREBASE',
+      uid: firebaseUser?.uid,
       name,
       email,
       initials,
       photoURL,
-      badge: 'Acesso Total',
-      fullAccess: true,
+      badge: calculatedBadge,
+      fullAccess: hasAllModules,
       active: userProfile?.active ?? true,
       createdAt: userProfile?.createdAt,
       lastLoginAt: userProfile?.lastLoginAt,
     };
-  }, [firebaseUser, userProfile]);
-
-  // Sincronizar treinos salvos quando o usuário autenticar
-  useEffect(() => {
-    if (firebaseUser?.uid) {
-      getUserWorkouts(firebaseUser.uid)
-        .then(setSavedWorkouts)
-        .catch((err) => console.warn('Aviso ao carregar treinos:', err));
-    }
-  }, [firebaseUser?.uid]);
+  }, [firebaseUser, userProfile, hasAllModules, hasBase, activeCount]);
 
   // Loading state while verifying Firebase session
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#08080a] text-[#ededf0] flex items-center justify-center font-sans antialiased p-4">
-        <div className="w-full max-w-xs bg-[#0c0c10] border border-[#1e1e28] rounded-2xl p-6 text-center space-y-4 shadow-2xl">
-          <div className="w-12 h-12 bg-[#e50914] rounded-xl flex items-center justify-center font-extrabold text-white text-xl mx-auto shadow-md shadow-red-950/50">
+      <div className="min-h-screen bg-[#0D0D0D] text-[#EAEAEA] flex items-center justify-center font-sans antialiased p-4">
+        <div className="w-full max-w-xs bg-[#120907] border border-[#2D2421] rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+          <div className="w-12 h-12 bg-[#CC0000] rounded-xl flex items-center justify-center font-extrabold text-white text-xl mx-auto shadow-md shadow-red-950/50">
             B
           </div>
           <div className="space-y-1">
             <h2 className="text-sm font-bold uppercase tracking-wider text-white">
               Base Visual da Musculação
             </h2>
-            <p className="text-xs text-zinc-500">Iniciando sessão...</p>
+            <p className="text-xs text-zinc-500">Sincronizando permissões Firestore...</p>
           </div>
-          <Loader2 size={24} className="animate-spin text-[#e50914] mx-auto" />
+          <Loader2 size={24} className="animate-spin text-[#CC0000] mx-auto" />
         </div>
       </div>
     );
@@ -159,71 +139,6 @@ function AppContent() {
   if (!firebaseUser) {
     return <LoginView />;
   }
-
-  // Workout Builder handlers
-  const handleWorkoutGenerated = (plan: WorkoutPlan) => {
-    setCurrentWorkoutPlan(plan);
-    setWorkoutViewMode('plan');
-    setHasSavedCurrentWorkout(false);
-  };
-
-  const handleRegenerateWorkout = () => {
-    if (!currentWorkoutPlan) return;
-    try {
-      const newPlan = generateWorkout(currentWorkoutPlan.answers);
-      setCurrentWorkoutPlan(newPlan);
-      setHasSavedCurrentWorkout(false);
-    } catch (err) {
-      console.error('Erro ao regenerar treino:', err);
-    }
-  };
-
-  const handleSaveWorkout = async (plan: WorkoutPlan) => {
-    if (!firebaseUser) return;
-    setIsSavingWorkout(true);
-    try {
-      await saveWorkoutToFirestore(firebaseUser.uid, plan);
-      setHasSavedCurrentWorkout(true);
-      const updated = await getUserWorkouts(firebaseUser.uid);
-      setSavedWorkouts(updated);
-    } catch (err) {
-      console.error('Erro ao salvar treino:', err);
-    } finally {
-      setIsSavingWorkout(false);
-    }
-  };
-
-  const handleDeleteWorkout = async (workoutId: string) => {
-    if (!firebaseUser) return;
-    await deleteWorkoutFromFirestore(firebaseUser.uid, workoutId);
-    setSavedWorkouts((prev) => prev.filter((w) => w.id !== workoutId));
-    if (currentWorkoutPlan?.id === workoutId) {
-      setCurrentWorkoutPlan(null);
-      setWorkoutViewMode('my_workouts');
-    }
-  };
-
-  const handleRenameWorkout = async (workoutId: string, newTitle: string) => {
-    if (!firebaseUser) return;
-    await renameWorkoutInFirestore(firebaseUser.uid, workoutId, newTitle);
-    setSavedWorkouts((prev) =>
-      prev.map((w) => (w.id === workoutId ? { ...w, title: newTitle } : w))
-    );
-    if (currentWorkoutPlan?.id === workoutId) {
-      setCurrentWorkoutPlan((prev) => (prev ? { ...prev, title: newTitle } : null));
-    }
-  };
-
-  const handleOpenSavedWorkout = (workout: WorkoutPlan) => {
-    setCurrentWorkoutPlan(workout);
-    setWorkoutViewMode('plan');
-    setHasSavedCurrentWorkout(true);
-  };
-
-  const handleViewWorkoutExercise = (exercise: Exercise) => {
-    setSelectedExercise(exercise);
-    setCurrentTab('exercicios');
-  };
 
   // Calculate high level counts
   const totalExercises = EXERCISES.length;
@@ -238,7 +153,6 @@ function AppContent() {
     }
     if (tab !== 'conteudos') {
       setSelectedMaterial(null);
-      setActiveViewingMaterial(null);
     }
   };
 
@@ -266,97 +180,123 @@ function AppContent() {
     setCurrentTab('exercicios');
   };
 
-  // Video demo open - acesso direto completo
+  // Video demo open - controlled by BASE module
   const handleOpenVideo = (exercise: Exercise) => {
+    if (!hasBase) {
+      setLockedCatalogItem({
+        id: 'LOCKED_BASE_VIDEO',
+        title: `Vídeo: ${exercise.name}`,
+        category: 'Vídeo Demonstrativo',
+        type: 'Vídeo MP4',
+        moduleId: 'BASE',
+        permissionName: 'Módulo Principal Base Visual',
+        status: 'Bloqueado',
+        isLockedDefault: true,
+      });
+      return;
+    }
     setDemoExercise(exercise);
   };
 
-  // Material reader open for exercise reference - acesso direto completo
+  // Material reader open for exercise reference - controlled by BASE module
   const handleOpenMaterialRef = (exercise: Exercise) => {
-    const baseMaterial = MATERIALS.find(
-      (m) => (m.materialId || m.id || m.ID) === 'MAT001'
-    ) || null;
+    if (!hasBase) {
+      setLockedCatalogItem({
+        id: 'LOCKED_BASE_REF',
+        title: 'Guia Base Visual da Musculação (PDF)',
+        category: 'Guia Oficial de Treinamento',
+        type: 'PDF Oficial',
+        moduleId: 'BASE',
+        permissionName: 'Módulo Principal Base Visual',
+        status: 'Bloqueado',
+        isLockedDefault: true,
+      });
+      return;
+    }
     setReaderState({
       isOpen: true,
-      material: baseMaterial,
+      material: MATERIALS[0],
       exerciseRef: exercise,
     });
   };
 
-  // Material access open for material card - acesso direto completo
+  // Material access open for material card - controlled by item's ModuloID
   const handleOpenMaterial = (material: Material) => {
-    const isSpreadsheet = material.Tipo === 'Planilha' || material.type === 'Planilha';
-    if (isSpreadsheet) {
-      const targetUrl = material.URL || material.url || material.directLink;
-      if (targetUrl) {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      }
+    if (material.isPromo || material.ID === 'MAT_SHAPE90' || material.id === 'MAT_SHAPE90') {
+      const promoUrl = material.acquireUrl || material.URL || 'https://primeiroshapeacesso.ai.studio/';
+      window.open(promoUrl, '_blank', 'noopener,noreferrer');
       return;
     }
-
-    // Para PDF ou Imagem: abrir internamente no app via MaterialViewer
-    setActiveViewingMaterial(material);
-    setCurrentTab('conteudos');
-  };
-
-  const handleUnlockContent = (mat: Material) => {
-    const modId = mat.ModuloID || mat.moduleId;
-    setLockedCatalogItem({
-      id: `LOCKED_${mat.ID || mat.id}`,
-      title: mat.Titulo || mat.title,
-      category: mat.Categoria || mat.category || mat.tag || 'Material',
-      type: mat.Tipo || mat.type,
-      moduleId: modId,
-      permissionName: mat.Permissao_Necessaria || mat.permissionCode || modId,
-      status: 'Bloqueado',
-      isLockedDefault: true,
-    });
+    const modId = material.ModuloID || material.moduleId;
+    if (!hasAccess(modId)) {
+      setLockedCatalogItem({
+        id: `LOCKED_${material.ID || material.id}`,
+        title: material.Titulo || material.title,
+        category: material.Categoria || material.category || material.tag || 'Material',
+        type: material.Tipo || material.type,
+        moduleId: modId,
+        permissionName: material.Permissao_Necessaria || material.permissionCode || modId,
+        status: 'Bloqueado',
+        isLockedDefault: true,
+      });
+      return;
+    }
+    const targetUrl = material.URL || material.url || material.directLink;
+    if (targetUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#08080a] text-zinc-100 flex justify-center font-sans antialiased selection:bg-[#e50914] selection:text-white">
+    <div className="min-h-screen bg-[#0D0D0D] text-[#EAEAEA] flex justify-center font-sans antialiased">
       {/* Mobile container centered on desktop */}
       <main
         id="app-container"
-        className="w-full max-w-md min-h-screen bg-[#0c0c10] shadow-2xl relative flex flex-col border-x border-[#1e1e28] pb-24"
+        className="w-full max-w-md min-h-screen bg-[#120907] shadow-2xl relative flex flex-col border-x border-[#2D2421] pb-20"
       >
         {/* Top Header with Brand Identity */}
         <header
           id="app-top-header"
-          className="h-16 flex items-center justify-between px-4 bg-[#0c0c10]/95 backdrop-blur-md border-b border-[#1e1e28] sticky top-0 z-30"
+          className="h-16 flex items-center justify-between px-4 bg-[#120907] border-b border-[#2D2421] sticky top-0 z-30"
         >
           <div
             onClick={() => handleSelectTab('inicio')}
             className="flex items-center gap-2.5 cursor-pointer"
           >
-            <div className="w-8 h-8 bg-[#e50914] rounded-xl flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-red-950/50">
+            <div className="w-8 h-8 bg-[#CC0000] rounded-lg flex items-center justify-center font-extrabold text-white text-base shadow-sm">
               B
             </div>
             <h1 className="text-sm font-bold tracking-tight uppercase text-white">
-              Base Visual <span className="text-[#e50914]">da Musculação</span>
+              Base Visual <span className="text-[#CC0000]">da Musculação</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 uppercase tracking-widest hidden xs:inline-flex items-center gap-1">
-              <ShieldCheck size={11} />
+            <span
+              className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest hidden xs:inline-flex items-center gap-1 ${
+                hasBase
+                  ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                  : 'bg-red-500/10 border-red-500/20 text-red-400'
+              }`}
+            >
+              {hasBase ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
               <span>{user.badge}</span>
             </span>
 
             <button
               id="top-profile-chip"
               onClick={() => handleSelectTab('perfil')}
-              className="flex items-center gap-1.5 bg-[#14141c] p-1 px-2.5 rounded-full border border-[#262632] hover:border-[#e50914]/60 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 bg-[#1A1412] p-1 px-2.5 rounded-full border border-[#2D2421] hover:border-[#CC0000]/60 transition-colors"
             >
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
                   alt={user.name}
                   referrerPolicy="no-referrer"
-                  className="w-5 h-5 rounded-full object-cover border border-[#282836]"
+                  className="w-5 h-5 rounded-full object-cover border border-[#2D2421]"
                 />
               ) : (
-                <div className="w-5 h-5 bg-[#20202c] rounded-full flex items-center justify-center text-[9px] font-bold text-white">
+                <div className="w-5 h-5 bg-zinc-800 rounded-full flex items-center justify-center text-[9px] font-bold text-white">
                   {user.initials}
                 </div>
               )}
@@ -377,49 +317,10 @@ function AppContent() {
               totalMaterials={totalMaterials}
               userBadge={user.badge}
               hasBaseAccess={hasBase}
-              materials={MATERIALS}
-              hasAccess={hasAccess}
-              onSelectMaterial={handleOpenMaterial}
               onSearch={handleHomeSearch}
               onSelectCategory={handleHomeCategorySelect}
               onViewAllExercises={handleViewAllExercises}
-              onNavigateTab={handleSelectTab}
             />
-          )}
-
-          {currentTab === 'treinos' && (
-            <>
-              {workoutViewMode === 'builder' && (
-                <WorkoutBuilderView
-                  onWorkoutGenerated={handleWorkoutGenerated}
-                  onOpenSavedWorkouts={() => setWorkoutViewMode('my_workouts')}
-                  savedWorkoutsCount={savedWorkouts.length}
-                />
-              )}
-
-              {workoutViewMode === 'plan' && currentWorkoutPlan && (
-                <WorkoutPlanView
-                  plan={currentWorkoutPlan}
-                  onBack={() => setWorkoutViewMode('builder')}
-                  onRegenerate={handleRegenerateWorkout}
-                  onSave={handleSaveWorkout}
-                  onViewExercise={handleViewWorkoutExercise}
-                  onUpdatePlan={(updated) => setCurrentWorkoutPlan(updated)}
-                  isSaving={isSavingWorkout}
-                  hasSaved={hasSavedCurrentWorkout}
-                />
-              )}
-
-              {workoutViewMode === 'my_workouts' && (
-                <MyWorkoutsView
-                  workouts={savedWorkouts}
-                  onOpenWorkout={handleOpenSavedWorkout}
-                  onDeleteWorkout={handleDeleteWorkout}
-                  onRenameWorkout={handleRenameWorkout}
-                  onCreateNew={() => setWorkoutViewMode('builder')}
-                />
-              )}
-            </>
           )}
 
           {currentTab === 'exercicios' && (
@@ -431,7 +332,6 @@ function AppContent() {
                   onBack={() => setSelectedExercise(null)}
                   onOpenVideo={handleOpenVideo}
                   onOpenMaterialRef={handleOpenMaterialRef}
-                  onUnlockContent={() => handleOpenMaterialRef(selectedExercise)}
                 />
               ) : (
                 <ExercisesView
@@ -449,31 +349,25 @@ function AppContent() {
 
           {currentTab === 'conteudos' && (
             <>
-              {activeViewingMaterial ? (
-                <MaterialViewer
-                  material={activeViewingMaterial}
-                  onBack={() => setActiveViewingMaterial(null)}
-                />
-              ) : selectedMaterial ? (
+              {selectedMaterial ? (
                 <ContentDetailView
                   material={selectedMaterial}
                   isUnlocked={hasAccess(selectedMaterial.ModuloID || selectedMaterial.moduleId)}
                   onBack={() => setSelectedMaterial(null)}
                   onAccessMaterial={handleOpenMaterial}
-                  onUnlockContent={handleUnlockContent}
+                  onUnlockContent={async (mat) => {
+                    const modId = (mat.ModuloID || mat.moduleId) as any;
+                    await grantModuleDev(modId, true);
+                  }}
                 />
               ) : (
                 <ContentsView
                   materials={MATERIALS}
                   catalogItems={CATALOG_ITEMS}
                   hasAccess={hasAccess}
-                  onSelectMaterial={(mat) => {
-                    setActiveViewingMaterial(null);
-                    setSelectedMaterial(mat);
-                  }}
+                  onSelectMaterial={(mat) => setSelectedMaterial(mat)}
                   onSelectLockedItem={(item) => setLockedCatalogItem(item)}
                   onGoToProfile={() => setCurrentTab('perfil')}
-                  onAccessDirectMaterial={handleOpenMaterial}
                 />
               )}
             </>
@@ -483,14 +377,16 @@ function AppContent() {
             <ProfileView
               user={user}
               materials={MATERIALS}
+              catalogItems={CATALOG_ITEMS}
+              userAccesses={userAccesses}
               hasAccess={hasAccess}
-              onRefreshAccesses={refreshAccesses}
-              onOpenHelp={() => setIsFeedbackOpen(true)}
+              onGrantModuleDev={grantModuleDev}
+              onOpenFeedback={() => setIsFeedbackOpen(true)}
               onSelectMaterial={(mat) => {
-                setActiveViewingMaterial(null);
                 setSelectedMaterial(mat);
                 setCurrentTab('conteudos');
               }}
+              onSelectLockedItem={(item) => setLockedCatalogItem(item)}
               onLogout={logout}
             />
           )}
@@ -498,9 +394,6 @@ function AppContent() {
 
         {/* Persistent Bottom Navigation Bar across all screens */}
         <BottomNav currentTab={currentTab} onSelectTab={handleSelectTab} />
-
-        {/* Discreet PWA Service Worker Update Notification */}
-        <PWAUpdateToast />
 
         {/* Modals */}
         <FeedbackModal
@@ -514,6 +407,9 @@ function AppContent() {
           item={lockedCatalogItem}
           onClose={() => setLockedCatalogItem(null)}
           onGoToProfile={() => setCurrentTab('perfil')}
+          onGrantDev={async (modId) => {
+            await grantModuleDev(modId, true);
+          }}
         />
 
         <DemonstrationModal
@@ -527,7 +423,7 @@ function AppContent() {
           onClose={() => setReaderState({ isOpen: false, material: null, exerciseRef: null })}
           material={readerState.material}
           exerciseRef={readerState.exerciseRef}
-          hasAccess={readerState.material ? hasAccess(readerState.material.ModuloID || readerState.material.moduleId) : hasBase}
+          hasAccess={readerState.material ? hasAccess(readerState.material.moduleId) : hasBase}
         />
       </main>
     </div>

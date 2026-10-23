@@ -9,7 +9,7 @@ import {
   completeEmailSignInLink,
   syncUserProfile,
   subscribeUserAccesses,
-  getUserAccesses,
+  setModuleAccessDev,
   AppUserProfile,
 } from '../lib/firebase';
 import { FirestoreUserAccess, ValidModuleId } from '../types';
@@ -24,7 +24,7 @@ interface AuthContextType {
   emailLinkSentTo: string | null;
   isEmailLinkPending: boolean;
   hasAccess: (moduleId: string) => boolean;
-  refreshAccesses: () => Promise<void>;
+  grantModuleDev: (moduleId: ValidModuleId | string, active: boolean) => Promise<void>;
   loginGoogle: () => Promise<void>;
   sendAccessLink: (email: string) => Promise<void>;
   confirmAccessLink: (email: string) => Promise<void>;
@@ -44,14 +44,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [error, setError] = useState<string | null>(null);
   const [emailLinkSentTo, setEmailLinkSentTo] = useState<string | null>(null);
   const [isEmailLinkPending, setIsEmailLinkPending] = useState(false);
-
-  // Clear any residual test flags on startup
-  useEffect(() => {
-    try {
-      window.sessionStorage.removeItem('TEST_MODE_ACTIVE');
-      window.sessionStorage.removeItem('TEST_BYPASS_ALL');
-    } catch {}
-  }, []);
 
 
   // Check if incoming URL is a Firebase email sign-in link
@@ -85,36 +77,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Listen to Firebase auth state
   useEffect(() => {
-    const ALL_SYSTEM_MODULES: ValidModuleId[] = [
-      'BASE',
-      'APP_ACCESS',
-      'TREINOS30',
-      'PACK48',
-      'PROGRAMA8',
-      'TREINOSDIA',
-      'NUTRICAO',
-      'BONUS_MELHORES',
-      'BONUS_CARGA',
-    ];
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setFirebaseUser(currentUser);
       if (currentUser) {
-        setFirebaseUser(currentUser);
-
-        // REGRA DE ACESSO COMPLETO: Todo usuário autenticado recebe todas as permissões ativas
-        const userEmail = (currentUser.email || '').trim().toLowerCase();
-        const fullAccesses: FirestoreUserAccess[] = ALL_SYSTEM_MODULES.map((mod) => ({
-          id: `${currentUser.uid}_${mod}`,
-          userId: currentUser.uid,
-          email: userEmail,
-          moduleId: mod,
-          active: true,
-          permissionName: mod,
-          source: 'full_access',
-        }));
-        setUserAccesses(fullAccesses);
-        setLoadingAccesses(false);
-
         try {
           const profile = await syncUserProfile(currentUser);
           setUserProfile(profile);
@@ -123,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Fallback to basic profile from Firebase auth in case of network issue
           setUserProfile({
             uid: currentUser.uid,
-            email: userEmail,
+            email: (currentUser.email || '').trim().toLowerCase(),
             name: currentUser.displayName || currentUser.email?.split('@')[0] || 'Usuário',
             photoURL: currentUser.photoURL || '',
             active: true,
@@ -131,9 +96,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } else {
         setUserProfile(null);
-        setFirebaseUser(null);
-        setUserAccesses([]);
-        setLoadingAccesses(false);
       }
       setLoading(false);
     });
@@ -141,46 +103,60 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => unsubscribe();
   }, []);
 
+  // Listen to Firestore real-time module accesses for current user
+  useEffect(() => {
+    if (!firebaseUser) {
+      setUserAccesses([]);
+      setLoadingAccesses(false);
+      return;
+    }
+
+    setLoadingAccesses(true);
+    const unsubscribe = subscribeUserAccesses(
+      firebaseUser.uid,
+      (accesses) => {
+        setUserAccesses(accesses);
+        setLoadingAccesses(false);
+      },
+      (err) => {
+        console.error('Falha ao carregar acessos do usuário no Firestore:', err);
+        setLoadingAccesses(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [firebaseUser]);
+
   /**
-   * REGRA FINAL DO SISTEMA:
-   * SE O USUÁRIO ESTÁ AUTENTICADO = POSSUI ACESSO COMPLETO A TODO O APLICATIVO.
-   * Não depende de webhooks, compras, SKUs ou permissões parciais.
+   * Check if user has active permission for a given module
    */
   const hasAccess = useCallback(
-    (_moduleId?: string): boolean => {
-      return Boolean(firebaseUser);
+    (moduleId: string): boolean => {
+      if (!userAccesses || userAccesses.length === 0) return false;
+      const target = moduleId.toUpperCase().trim();
+      return userAccesses.some((acc) => {
+        const currentMod = acc.moduleId.toUpperCase().trim();
+        if (currentMod === target) return acc.active === true;
+        // Check aliases for TREINOSDIA and DIASSEMANA
+        if (
+          (target === 'TREINOSDIA' || target === 'DIASSEMANA') &&
+          (currentMod === 'TREINOSDIA' || currentMod === 'DIASSEMANA')
+        ) {
+          return acc.active === true;
+        }
+        return false;
+      });
     },
-    [firebaseUser]
+    [userAccesses]
   );
 
   /**
-   * Atualização manual de acessos sob demanda (assegura estado liberado)
+   * Development / Admin helper to grant or revoke a module permission in Firestore
    */
-  const refreshAccesses = async () => {
-    if (!firebaseUser) return;
-    const ALL_SYSTEM_MODULES: ValidModuleId[] = [
-      'BASE',
-      'APP_ACCESS',
-      'TREINOS30',
-      'PACK48',
-      'PROGRAMA8',
-      'TREINOSDIA',
-      'NUTRICAO',
-      'BONUS_MELHORES',
-      'BONUS_CARGA',
-    ];
-    const userEmail = (firebaseUser.email || '').trim().toLowerCase();
-    const fullAccesses: FirestoreUserAccess[] = ALL_SYSTEM_MODULES.map((mod) => ({
-      id: `${firebaseUser.uid}_${mod}`,
-      userId: firebaseUser.uid,
-      email: userEmail,
-      moduleId: mod,
-      active: true,
-      permissionName: mod,
-      source: 'full_access',
-    }));
-    setUserAccesses(fullAccesses);
-    setLoadingAccesses(false);
+  const grantModuleDev = async (moduleId: ValidModuleId | string, active: boolean) => {
+    if (!firebaseUser) throw new Error('Usuário precisa estar autenticado.');
+    const userEmail = firebaseUser.email || userProfile?.email || '';
+    await setModuleAccessDev(firebaseUser.uid, userEmail, moduleId, active);
   };
 
   /**
@@ -256,7 +232,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       setError(null);
-      setUserAccesses([]);
       await logoutUser();
       setFirebaseUser(null);
       setUserProfile(null);
@@ -265,7 +240,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsEmailLinkPending(false);
     } catch (err: any) {
       console.error('Erro ao sair:', err);
-      setUserAccesses([]);
       setError('Erro ao encerrar a sessão.');
     }
   };
@@ -285,7 +259,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         emailLinkSentTo,
         isEmailLinkPending,
         hasAccess,
-        refreshAccesses,
+        grantModuleDev,
         loginGoogle,
         sendAccessLink,
         confirmAccessLink,
