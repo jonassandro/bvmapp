@@ -80,7 +80,7 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
     'NUTRICAO',
     'SHAPE90',
   ].filter(hasAccess).length;
-  const allUnlocked = activeCount >= 6;
+  const allUnlocked = activeCount === allCount;
 
   const handleButtonClick = (e: React.MouseEvent, material: Material) => {
     e.stopPropagation();
