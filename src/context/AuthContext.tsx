@@ -128,23 +128,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [firebaseUser]);
 
   /**
-   * Check if user has active permission for a given module
+   * All content is included by default; only Primeiro Shape needs active permission.
    */
   const hasAccess = useCallback(
     (moduleId: string): boolean => {
-      if (!userAccesses || userAccesses.length === 0) return false;
       const target = moduleId.toUpperCase().trim();
+      if (target !== 'SHAPE90') return true;
+
       return userAccesses.some((acc) => {
         const currentMod = acc.moduleId.toUpperCase().trim();
-        if (currentMod === target) return acc.active === true;
-        // Check aliases for TREINOSDIA and DIASSEMANA
-        if (
-          (target === 'TREINOSDIA' || target === 'DIASSEMANA') &&
-          (currentMod === 'TREINOSDIA' || currentMod === 'DIASSEMANA')
-        ) {
-          return acc.active === true;
-        }
-        return false;
+        return currentMod === target && acc.active === true;
       });
     },
     [userAccesses]
