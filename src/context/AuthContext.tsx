@@ -8,7 +8,6 @@ import {
   checkIsEmailSignInLink,
   completeEmailSignInLink,
   syncUserProfile,
-  subscribeUserAccesses,
   setModuleAccessDev,
   AppUserProfile,
 } from '../lib/firebase';
@@ -39,7 +38,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<AppUserProfile | null>(null);
   const [userAccesses, setUserAccesses] = useState<FirestoreUserAccess[]>([]);
-  const [loadingAccesses, setLoadingAccesses] = useState(false);
+  const loadingAccesses = false;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emailLinkSentTo, setEmailLinkSentTo] = useState<string | null>(null);
@@ -103,45 +102,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => unsubscribe();
   }, []);
 
-  // Listen to Firestore real-time module accesses for current user
-  useEffect(() => {
-    if (!firebaseUser) {
-      setUserAccesses([]);
-      setLoadingAccesses(false);
-      return;
-    }
-
-    setLoadingAccesses(true);
-    const unsubscribe = subscribeUserAccesses(
-      firebaseUser.uid,
-      (accesses) => {
-        setUserAccesses(accesses);
-        setLoadingAccesses(false);
-      },
-      (err) => {
-        console.error('Falha ao carregar acessos do usuário no Firestore:', err);
-        setLoadingAccesses(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [firebaseUser]);
-
-  /**
-   * All content is included by default; only Primeiro Shape needs active permission.
-   */
-  const hasAccess = useCallback(
-    (moduleId: string): boolean => {
-      const target = moduleId.toUpperCase().trim();
-      if (target !== 'SHAPE90') return true;
-
-      return userAccesses.some((acc) => {
-        const currentMod = acc.moduleId.toUpperCase().trim();
-        return currentMod === target && acc.active === true;
-      });
-    },
-    [userAccesses]
-  );
+  // Every module is included, including Primeiro Shape. Access never depends
+  // on purchase records, permission loading, or Firestore availability.
+  const hasAccess = useCallback((_moduleId: string): boolean => true, []);
 
   /**
    * Development / Admin helper to grant or revoke a module permission in Firestore

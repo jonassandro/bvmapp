@@ -1,16 +1,14 @@
 import React from 'react';
+import { ShapePurchaseOffer } from './ShapePurchaseOffer';
 import {
   BookOpen,
   ShieldCheck,
-  Lock,
   ChevronRight,
   ShieldAlert,
   ExternalLink,
   FileSpreadsheet,
   Image as ImageIcon,
   Flame,
-  Sparkles,
-  Zap,
 } from 'lucide-react';
 import { Material, CatalogItem } from '../types';
 
@@ -41,7 +39,6 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
       m.moduleId === 'SHAPE90'
   );
 
-  const hasShape90Access = hasAccess('SHAPE90');
 
   // Visivel_Catalogo e Ativo definem visibilidade no catálogo, NÃO acesso
   const isMaterialCatalogActive = (m: Material) => {
@@ -64,13 +61,8 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
     return hasAccess(modId);
   });
 
-  const lockedMaterials = standardMaterials.filter((m) => {
-    const modId = m.ModuloID || m.moduleId;
-    return !hasAccess(modId);
-  });
-
   const hasBase = hasAccess('BASE');
-  const allCount = 7;
+  const allCount = 6;
   const activeCount = [
     'BASE',
     'TREINOS30',
@@ -78,7 +70,6 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
     'PROGRAMA8',
     'TREINOSDIA',
     'NUTRICAO',
-    'SHAPE90',
   ].filter(hasAccess).length;
   const allUnlocked = activeCount === allCount;
 
@@ -134,60 +125,9 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
         </p>
 
         <p className="text-[11px] text-zinc-500 leading-relaxed">
-          Cada material é liberado exclusivamente mediante permissão ativa no seu usuário.
+          Todos os materiais da biblioteca estão liberados. O Primeiro Shape é um projeto opcional, vendido separadamente.
         </p>
       </div>
-
-      {/* Featured Spotlight: Projeto Primeiro Shape em 90 Dias */}
-      {shape90Material && (
-        <div
-          id="featured-shape90-card"
-          onClick={() => onSelectMaterial(shape90Material)}
-          className="bg-gradient-to-br from-[#241310] via-[#1A0E0C] to-[#120807] border border-[#4A261F] hover:border-[#CC0000] rounded-2xl p-4 shadow-xl transition-all cursor-pointer relative overflow-hidden group active:scale-[0.99]"
-        >
-          {/* Ambient red flare */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#CC0000]/15 rounded-full blur-2xl pointer-events-none group-hover:bg-[#CC0000]/25 transition-all" />
-
-          <div className="relative space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF4444] bg-[#CC0000]/15 border border-[#CC0000]/30 px-2.5 py-0.5 rounded flex items-center gap-1">
-                <Flame size={12} />
-                <span>Conteúdo Extra em Destaque</span>
-              </span>
-
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-                61% OFF
-              </span>
-            </div>
-
-            <div>
-              <h3 className="text-base font-black text-white uppercase tracking-tight group-hover:text-red-200 transition-colors">
-                Projeto Primeiro Shape em 90 Dias
-              </h3>
-              <p className="text-xs text-zinc-300 mt-0.5 line-clamp-2 leading-relaxed">
-                Um método estruturado para alcançar o primeiro shape mais rápido do que quem treina normalmente na academia sem planejamento.
-              </p>
-            </div>
-
-            {/* Price tag strip */}
-            <div className="flex items-center justify-between pt-1 border-t border-[#3A1F19]">
-              <div className="flex items-baseline gap-2">
-                <span className="text-xs text-zinc-500 line-through font-mono">
-                  De R$ 97,90
-                </span>
-                <span className="text-lg font-black text-emerald-400 font-mono">
-                  R$ 37,90
-                </span>
-              </div>
-
-              <span className="text-[11px] font-bold uppercase tracking-wider text-white bg-[#CC0000] hover:bg-red-700 px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-md shadow-red-950/40">
-                <span>Ver & Desbloquear</span>
-                <ChevronRight size={13} />
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Conteúdos Liberados Section */}
       <div className="space-y-2">
@@ -196,45 +136,12 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
             Conteúdos Liberados
           </h2>
           <span className="text-[10px] font-bold text-green-500 uppercase tracking-wider">
-            {releasedMaterials.length + (hasShape90Access ? 1 : 0)} liberados
+            {releasedMaterials.length} liberados
           </span>
         </div>
 
-        {releasedMaterials.length > 0 || hasShape90Access ? (
+        {releasedMaterials.length > 0 ? (
           <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl divide-y divide-[#2D2421] overflow-hidden shadow-md">
-            {/* Show shape90 in released if unlocked */}
-            {hasShape90Access && shape90Material && (
-              <div
-                id="material-row-MAT_SHAPE90"
-                onClick={() => onSelectMaterial(shape90Material)}
-                className="p-3.5 flex items-center justify-between gap-3 bg-[#241310]/50 hover:bg-[#281613] transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-[#120907] border border-[#4A261F] flex items-center justify-center shrink-0">
-                    <Flame size={16} className="text-[#FF4444]" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-xs font-bold text-white uppercase truncate">
-                      {shape90Material.Titulo}
-                    </h3>
-                    <p className="text-[10px] text-zinc-400 mt-0.5 truncate">
-                      Projeto Acelerador · 90 Dias
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  id="btn-acessar-shape90"
-                  onClick={(e) => handleButtonClick(e, shape90Material)}
-                  className="text-[10px] font-bold uppercase tracking-wider text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 active:scale-95 px-3 py-1.5 rounded-lg shrink-0 flex items-center gap-1 transition-all cursor-pointer"
-                >
-                  <ExternalLink size={12} />
-                  <span>Acessar</span>
-                </button>
-              </div>
-            )}
-
             {releasedMaterials.map((material) => {
               const matId = material.ID || material.id;
               const isSpreadsheet = material.Tipo === 'Planilha' || material.type === 'Planilha';
@@ -283,81 +190,9 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
         )}
       </div>
 
-      {/* Outros Conteúdos (Bloqueados) Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-            Outros Conteúdos do Ecossistema
-          </h2>
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-            {lockedMaterials.length + (!hasShape90Access && shape90Material ? 1 : 0)} disponíveis
-          </span>
-        </div>
+      {shape90Material && <ShapePurchaseOffer material={shape90Material} />}
 
-        <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl divide-y divide-[#2D2421] overflow-hidden shadow-md">
-          {/* If Shape 90 is locked, show it in the catalog list too */}
-          {!hasShape90Access && shape90Material && (
-            <div
-              id="catalog-row-MAT_SHAPE90"
-              onClick={() => onSelectMaterial(shape90Material)}
-              className="p-3.5 flex items-center justify-between gap-3 hover:bg-[#201815] active:bg-[#251d1a] transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-lg bg-[#120907] border border-[#4A261F] flex items-center justify-center shrink-0 text-[#FF4444]">
-                  <Flame size={15} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-xs font-bold text-white truncate">
-                    {shape90Material.Titulo}
-                  </h3>
-                  <p className="text-[10px] text-zinc-400 mt-0.5 truncate">
-                    De R$ 97,90 por R$ 37,90 · Projeto Acelerado
-                  </p>
-                </div>
-              </div>
-
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-[#CC0000]/15 text-[#FF5555] border border-[#CC0000]/30 shrink-0 flex items-center gap-1">
-                <span>Desbloquear</span>
-              </span>
-            </div>
-          )}
-
-          {lockedMaterials.map((material) => {
-            const matId = material.ID || material.id;
-            const modId = material.ModuloID || material.moduleId;
-
-            return (
-              <div
-                key={matId}
-                id={`catalog-row-${matId}`}
-                onClick={() => onSelectMaterial(material)}
-                className="p-3.5 flex items-center justify-between gap-3 hover:bg-[#201815] active:bg-[#251d1a] transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-[#120907] border border-[#2D2421] flex items-center justify-center shrink-0 text-zinc-600">
-                    <Lock size={15} />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-xs font-medium text-zinc-300 truncate">
-                      {material.Titulo || material.title}
-                    </h3>
-                    <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
-                      Conteúdo adicional · Módulo {modId}
-                    </p>
-                  </div>
-                </div>
-
-                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-[#120907] text-zinc-500 border border-[#2D2421] shrink-0 flex items-center gap-1">
-                  <Lock size={10} />
-                  <span>Bloqueado</span>
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Link: Gerenciar permissões no Perfil */}
+      {/* Link: Ver meu perfil */}
       <div className="pt-1">
         <button
           id="btn-ver-acesso-perfil"
@@ -365,7 +200,7 @@ export const ContentsView: React.FC<ContentsViewProps> = ({
           onClick={onGoToProfile}
           className="text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
         >
-          <span>Gerenciar permissões no Perfil</span>
+          <span>Ver meu perfil</span>
           <ChevronRight size={14} />
         </button>
       </div>
