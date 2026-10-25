@@ -66,12 +66,7 @@ const AVAILABLE_MODULES: { id: ValidModuleId; name: string; desc: string; catego
     desc: 'Cálculo de macronutrientes, distribuição calórica e orientações essenciais',
     category: 'Nutrição Esportiva',
   },
-  {
-    id: 'SHAPE90',
-    name: 'Projeto Primeiro Shape em 90 Dias',
-    desc: 'Método acelerado para construir o primeiro físico estético e definido em 90 dias',
-    category: 'Projeto Especial',
-  },
+
 ];
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -86,35 +81,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onSelectLockedItem,
   onLogout,
 }) => {
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
-  const [showConsoleGuide, setShowConsoleGuide] = useState(false);
-
-  const handleToggleModule = async (moduleId: ValidModuleId, currentActive: boolean) => {
-    if (!onGrantModuleDev) return;
-    try {
-      setIsProcessing(moduleId);
-      await onGrantModuleDev(moduleId, !currentActive);
-    } catch (err: any) {
-      console.error('Erro ao atualizar permissão no Firestore:', err);
-    } finally {
-      setIsProcessing(null);
-    }
-  };
-
-  const handleToggleAll = async (targetActive: boolean) => {
-    if (!onGrantModuleDev) return;
-    try {
-      setIsProcessing('ALL');
-      for (const mod of AVAILABLE_MODULES) {
-        await onGrantModuleDev(mod.id, targetActive);
-      }
-    } catch (err: any) {
-      console.error('Erro ao atualizar todas as permissões:', err);
-    } finally {
-      setIsProcessing(null);
-    }
-  };
-
   const activeModulesCount = AVAILABLE_MODULES.filter((m) => hasAccess(m.id)).length;
   const isAllActive = activeModulesCount === AVAILABLE_MODULES.length;
 
@@ -170,14 +136,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-            Módulos Contratados (Firestore)
+            Conteúdos incluídos
           </h2>
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             {activeModulesCount} de {AVAILABLE_MODULES.length} liberados
           </span>
         </div>
         <p className="text-xs text-zinc-500 px-1">
-          Os acessos são consultados em tempo real na coleção <code className="text-[#CC0000] font-mono">user_access</code>.
+          Todos os módulos estão incluídos e liberados para sua conta.
         </p>
 
         <div className="bg-[#1A1412] border border-[#2D2421] rounded-xl divide-y divide-[#2D2421] overflow-hidden shadow-md">
@@ -228,127 +194,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           })}
         </div>
       </div>
-
-      {/* Painel Temporário de Testes / Desenvolvedor */}
-      {onGrantModuleDev && (
-        <div className="bg-[#120907] border border-[#2D2421] rounded-2xl p-4 space-y-3.5 shadow-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Database size={16} className="text-[#CC0000]" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
-                Painel de Teste de Permissões (Modo Dev)
-              </h2>
-            </div>
-            <span className="text-[9px] uppercase font-bold text-[#CC0000] bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded">
-              Temporário
-            </span>
-          </div>
-
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            Permite adicionar ou remover permissões reais na coleção Firestore <code className="text-[#CC0000] font-mono">user_access</code> para este usuário (<code className="text-zinc-300 font-mono">{user.email}</code>) durante os testes de validação.
-          </p>
-
-          {/* Quick Buttons for all 6 modules */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            {AVAILABLE_MODULES.map((mod) => {
-              const active = hasAccess(mod.id);
-              const processing = isProcessing === mod.id || isProcessing === 'ALL';
-              return (
-                <button
-                  key={mod.id}
-                  id={`btn-dev-toggle-${mod.id}`}
-                  disabled={processing}
-                  onClick={() => handleToggleModule(mod.id, active)}
-                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 disabled:opacity-50 ${
-                    active
-                      ? 'bg-green-500/5 hover:bg-green-500/10 border-green-500/30 text-green-300'
-                      : 'bg-[#1A1412] hover:bg-[#241c19] border-[#2D2421] text-zinc-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-mono font-bold text-[11px] text-white">
-                      {mod.id}
-                    </span>
-                    {active ? (
-                      <span className="text-[8px] font-bold uppercase bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
-                        Liberado
-                      </span>
-                    ) : (
-                      <span className="text-[8px] font-bold uppercase bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded">
-                        Bloqueado
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] font-medium text-zinc-400">
-                    {processing
-                      ? 'Salvando...'
-                      : active
-                      ? 'Clique para revogar'
-                      : 'Clique para liberar'}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Global Quick Actions */}
-          <div className="flex items-center gap-2 pt-1">
-            <button
-              id="btn-dev-grant-all"
-              disabled={isProcessing !== null}
-              onClick={() => handleToggleAll(true)}
-              className="flex-1 bg-[#1A1412] hover:bg-[#251d1a] border border-[#2D2421] hover:border-green-500/40 text-green-400 font-bold text-[10px] uppercase tracking-wider py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              <ShieldCheck size={13} />
-              <span>Liberar Todos</span>
-            </button>
-
-            <button
-              id="btn-dev-revoke-all"
-              disabled={isProcessing !== null}
-              onClick={() => handleToggleAll(false)}
-              className="flex-1 bg-[#1A1412] hover:bg-[#251d1a] border border-[#2D2421] hover:border-red-500/40 text-red-400 font-bold text-[10px] uppercase tracking-wider py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              <Lock size={13} />
-              <span>Bloquear Todos</span>
-            </button>
-          </div>
-
-          {/* Instructions for manual addition via Firebase Console */}
-          <div className="pt-2 border-t border-[#2D2421]">
-            <button
-              id="btn-toggle-console-guide"
-              onClick={() => setShowConsoleGuide(!showConsoleGuide)}
-              className="text-[10px] uppercase font-bold text-zinc-400 hover:text-white flex items-center justify-between w-full transition-colors"
-            >
-              <div className="flex items-center gap-1.5">
-                <Info size={13} className="text-[#CC0000]" />
-                <span>Como adicionar permissão manualmente no Console Firebase</span>
-              </div>
-              <span>{showConsoleGuide ? '▲' : '▼'}</span>
-            </button>
-
-            {showConsoleGuide && (
-              <div className="mt-2.5 p-3 rounded-xl bg-[#1A1412] border border-[#2D2421] text-xs text-zinc-400 space-y-2 leading-relaxed">
-                <p>
-                  No console do Firebase (projeto <code className="text-zinc-200 font-mono">basevisualmusculacao</code>), você pode criar o documento diretamente:
-                </p>
-                <div className="bg-[#120907] p-2.5 rounded-lg border border-[#2D2421] font-mono text-[11px] space-y-1 text-zinc-300">
-                  <p><strong className="text-zinc-500">Coleção:</strong> user_access</p>
-                  <p><strong className="text-zinc-500">ID do Documento:</strong> {user.uid}_BASE</p>
-                  <p><strong className="text-zinc-500">Campos:</strong></p>
-                  <p className="pl-3">userId: <span className="text-green-400">"{user.uid}"</span> (string)</p>
-                  <p className="pl-3">email: <span className="text-green-400">"{user.email}"</span> (string)</p>
-                  <p className="pl-3">moduleId: <span className="text-green-400">"BASE"</span> (string)</p>
-                  <p className="pl-3">active: <span className="text-amber-400">true</span> (boolean)</p>
-                  <p className="pl-3">source: <span className="text-green-400">"manual_console"</span> (string)</p>
-                  <p className="pl-3">createdAt: (timestamp)</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Feedback Section */}
       <div className="space-y-2 pt-1">

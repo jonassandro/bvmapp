@@ -22,7 +22,6 @@ import { ContentsView } from './components/ContentsView';
 import { ContentDetailView } from './components/ContentDetailView';
 import { ProfileView } from './components/ProfileView';
 import { FeedbackModal } from './components/FeedbackModal';
-import { LockedContentModal } from './components/LockedContentModal';
 import { DemonstrationModal } from './components/DemonstrationModal';
 import { MaterialReaderModal } from './components/MaterialReaderModal';
 
@@ -32,7 +31,6 @@ function AppContent() {
     userProfile,
     userAccesses,
     hasAccess,
-    grantModuleDev,
     loading,
     logout,
   } = useAuth();
@@ -50,7 +48,6 @@ function AppContent() {
 
   // Modals state
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [lockedCatalogItem, setLockedCatalogItem] = useState<CatalogItem | null>(null);
   const [demoExercise, setDemoExercise] = useState<Exercise | null>(null);
   const [readerState, setReaderState] = useState<{
     isOpen: boolean;
@@ -64,7 +61,7 @@ function AppContent() {
 
   // Access checks
   const hasBase = hasAccess('BASE');
-  const allModulesList = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO', 'SHAPE90'];
+  const allModulesList = ['BASE', 'TREINOS30', 'PACK48', 'PROGRAMA8', 'TREINOSDIA', 'NUTRICAO'];
   const activeCount = allModulesList.filter((m) => hasAccess(m)).length;
   const hasAllModules = activeCount === allModulesList.length;
 
@@ -127,7 +124,7 @@ function AppContent() {
             <h2 className="text-sm font-bold uppercase tracking-wider text-white">
               Base Visual da Musculação
             </h2>
-            <p className="text-xs text-zinc-500">Sincronizando permissões Firestore...</p>
+            <p className="text-xs text-zinc-500">Carregando sua conta...</p>
           </div>
           <Loader2 size={24} className="animate-spin text-[#CC0000] mx-auto" />
         </div>
@@ -143,7 +140,7 @@ function AppContent() {
   // Calculate high level counts
   const totalExercises = EXERCISES.length;
   const totalVideos = EXERCISES.filter((e) => e.hasVideo).length;
-  const totalMaterials = MATERIALS.length + CATALOG_ITEMS.length;
+  const totalMaterials = MATERIALS.filter((material) => !material.isPromo).length;
 
   // Handle Tab navigation
   const handleSelectTab = (tab: TabType) => {
@@ -180,70 +177,24 @@ function AppContent() {
     setCurrentTab('exercicios');
   };
 
-  // Video demo open - controlled by BASE module
   const handleOpenVideo = (exercise: Exercise) => {
-    if (!hasBase) {
-      setLockedCatalogItem({
-        id: 'LOCKED_BASE_VIDEO',
-        title: `Vídeo: ${exercise.name}`,
-        category: 'Vídeo Demonstrativo',
-        type: 'Vídeo MP4',
-        moduleId: 'BASE',
-        permissionName: 'Módulo Principal Base Visual',
-        status: 'Bloqueado',
-        isLockedDefault: true,
-      });
-      return;
-    }
     setDemoExercise(exercise);
   };
 
-  // Material reader open for exercise reference - controlled by BASE module
   const handleOpenMaterialRef = (exercise: Exercise) => {
-    if (!hasBase) {
-      setLockedCatalogItem({
-        id: 'LOCKED_BASE_REF',
-        title: 'Guia Base Visual da Musculação (PDF)',
-        category: 'Guia Oficial de Treinamento',
-        type: 'PDF Oficial',
-        moduleId: 'BASE',
-        permissionName: 'Módulo Principal Base Visual',
-        status: 'Bloqueado',
-        isLockedDefault: true,
-      });
-      return;
-    }
-    setReaderState({
-      isOpen: true,
-      material: MATERIALS[0],
-      exerciseRef: exercise,
-    });
+    setReaderState({ isOpen: true, material: MATERIALS[0], exerciseRef: exercise });
   };
 
-  // Material access open for material card - controlled by item's ModuloID
   const handleOpenMaterial = (material: Material) => {
-    if (material.isPromo || material.ID === 'MAT_SHAPE90' || material.id === 'MAT_SHAPE90') {
-      const promoUrl = material.acquireUrl || material.URL || 'https://primeiroshapeacesso.ai.studio/';
-      window.open(promoUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    const modId = material.ModuloID || material.moduleId;
-    if (!hasAccess(modId)) {
-      setLockedCatalogItem({
-        id: `LOCKED_${material.ID || material.id}`,
-        title: material.Titulo || material.title,
-        category: material.Categoria || material.category || material.tag || 'Material',
-        type: material.Tipo || material.type,
-        moduleId: modId,
-        permissionName: material.Permissao_Necessaria || material.permissionCode || modId,
-        status: 'Bloqueado',
-        isLockedDefault: true,
-      });
-      return;
-    }
-    const targetUrl = material.URL || material.url || material.directLink;
-    if (targetUrl) {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    const targetUrl = material.URL || material.url || material.directLink || material.acquireUrl;
+    if (targetUrl) window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleSelectCatalogItem = (item: CatalogItem) => {
+    const material = MATERIALS.find((mat) => (mat.ModuloID || mat.moduleId) === item.moduleId);
+    if (material) {
+      setSelectedMaterial(material);
+      setCurrentTab('conteudos');
     }
   };
 
@@ -352,13 +303,9 @@ function AppContent() {
               {selectedMaterial ? (
                 <ContentDetailView
                   material={selectedMaterial}
-                  isUnlocked={hasAccess(selectedMaterial.ModuloID || selectedMaterial.moduleId)}
                   onBack={() => setSelectedMaterial(null)}
                   onAccessMaterial={handleOpenMaterial}
-                  onUnlockContent={async (mat) => {
-                    const modId = (mat.ModuloID || mat.moduleId) as any;
-                    await grantModuleDev(modId, true);
-                  }}
+
                 />
               ) : (
                 <ContentsView
@@ -366,7 +313,7 @@ function AppContent() {
                   catalogItems={CATALOG_ITEMS}
                   hasAccess={hasAccess}
                   onSelectMaterial={(mat) => setSelectedMaterial(mat)}
-                  onSelectLockedItem={(item) => setLockedCatalogItem(item)}
+                  onSelectLockedItem={handleSelectCatalogItem}
                   onGoToProfile={() => setCurrentTab('perfil')}
                 />
               )}
@@ -380,13 +327,12 @@ function AppContent() {
               catalogItems={CATALOG_ITEMS}
               userAccesses={userAccesses}
               hasAccess={hasAccess}
-              onGrantModuleDev={grantModuleDev}
               onOpenFeedback={() => setIsFeedbackOpen(true)}
               onSelectMaterial={(mat) => {
                 setSelectedMaterial(mat);
                 setCurrentTab('conteudos');
               }}
-              onSelectLockedItem={(item) => setLockedCatalogItem(item)}
+              onSelectLockedItem={handleSelectCatalogItem}
               onLogout={logout}
             />
           )}
@@ -401,15 +347,6 @@ function AppContent() {
           onClose={() => setIsFeedbackOpen(false)}
           defaultName={user.name}
           defaultEmail={user.email}
-        />
-
-        <LockedContentModal
-          item={lockedCatalogItem}
-          onClose={() => setLockedCatalogItem(null)}
-          onGoToProfile={() => setCurrentTab('perfil')}
-          onGrantDev={async (modId) => {
-            await grantModuleDev(modId, true);
-          }}
         />
 
         <DemonstrationModal
