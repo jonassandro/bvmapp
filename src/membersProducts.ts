@@ -3,7 +3,6 @@ export interface MemberProduct {
   title: string;
   description: string;
   url: string;
-  /** Coloque aqui o caminho ou URL da imagem de logo do produto (ex: "/assets/logo-cozinha.png") */
   logoUrl: string;
   badge?: string;
 }
@@ -15,7 +14,7 @@ export const MEMBERS_AREA_PRODUCTS: MemberProduct[] = [
     description:
       "Receitas anabólicas, práticas e saborosas para secar e definir sem passar fome, com 40% de desconto exclusivo.",
     url: "https://primeiroshapeacesso.ai.studio",
-    logoUrl: "",
+    logoUrl: "/assets/products/cozinha.png",
     badge: "Oferta 40% OFF",
   },
   {
@@ -24,7 +23,7 @@ export const MEMBERS_AREA_PRODUCTS: MemberProduct[] = [
     description:
       "O plano estratégico passo a passo para conquistar seu primeiro shape estético e definido no menor tempo possível.",
     url: "https://pay.wiapy.com/_akvGPnUP-4e",
-    logoUrl: "",
+    logoUrl: "/assets/products/primeiro-shape.png",
   },
   {
     id: "segredo-da-insulina",
@@ -32,7 +31,7 @@ export const MEMBERS_AREA_PRODUCTS: MemberProduct[] = [
     description:
       "Domine o controle da insulina para destravar a queima de gordura corporal e melhorar a absorção de nutrientes.",
     url: "https://pay.wiapy.com/9TzbfEBoELNz",
-    logoUrl: "",
+    logoUrl: "/assets/products/insulina.png",
   },
   {
     id: "protocolo-acelera-7-dias",
@@ -40,7 +39,7 @@ export const MEMBERS_AREA_PRODUCTS: MemberProduct[] = [
     description:
       "Protocolo prático de 7 dias para desinchar rápido, reativar o metabolismo e gerar resultados visíveis já na primeira semana.",
     url: "https://pay.wiapy.com/ZVx-WFYoSTSi",
-    logoUrl: "",
+    logoUrl: "/assets/products/acelera-7-dias.png",
   },
   {
     id: "1000-receitas-low-carb",
@@ -48,7 +47,7 @@ export const MEMBERS_AREA_PRODUCTS: MemberProduct[] = [
     description:
       "Acervo completo com 1.000 opções de refeições low carb rápidas e acessíveis para variar o cardápio sem sair da meta.",
     url: "https://pay.wiapy.com/3WXe74-LNBGs",
-    logoUrl: "",
+    logoUrl: "/assets/products/1000-receitas.png",
   },
   {
     id: "40-exercicios-pilates-em-casa",
@@ -56,6 +55,6 @@ export const MEMBERS_AREA_PRODUCTS: MemberProduct[] = [
     description:
       "Rotina guiada com 40 exercícios de Pilates para fortalecer o abdômen, corrigir a postura e ganhar mobilidade treinando em casa.",
     url: "https://pay.wiapy.com/xLHs3h7hk8V4",
-    logoUrl: "",
+    logoUrl: "/assets/products/pilates.png",
   },
 ];
