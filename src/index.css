@@ -1,44 +1,198 @@
 @import "tailwindcss";
+@source "./";
 
+/* Presentation only. Components, application state and integrations stay intact. */
 :root {
-  --color-bg-app: #0d0d0d;
-  --color-bg-surface: #120907;
-  --color-bg-card: #1a1412;
-  --color-border: #2d2421;
-  --color-accent-red: #c00;
-  --color-accent-red-hover: #b30000;
+  color-scheme: dark;
+  --color-bg-app: #0b0d10;
+  --color-bg-surface: #101318;
+  --color-bg-card: #181c22;
+  --color-border: #2a3039;
+  --color-accent-red: #e34748;
+  --color-accent-red-hover: #ee5b5c;
+  --muted: #a2aab6;
 }
+html { background: var(--color-bg-app); scroll-padding-top: 100px; }
+body { margin: 0; color: #f1f3f6; background: var(--color-bg-app); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+::selection { background: #e3474840; color: #fff; }
+button, input, select, textarea { font-family: inherit; }
+button, a { touch-action: manipulation; }
+button:not(:disabled), select { cursor: pointer; }
+button, a, input, textarea, select { transition: background-color 180ms, border-color 180ms, color 180ms, box-shadow 180ms, opacity 180ms, transform 180ms; }
+button:disabled { cursor: wait; }
+:is(button, a, input, textarea, select):focus-visible { outline: 2px solid #f27a7b; outline-offset: 4px; }
 
-body {
-  color: #eaeaea;
-  -webkit-tap-highlight-color: transparent;
-  background-color: #0d0d0d;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
+/* Shared graphite palette, applied to the existing utility-based components. */
+[class~="bg-[#0D0D0D]"], [class~="bg-[#0d0d0d]"] { background-color: var(--color-bg-app); }
+[class~="bg-[#120907]"], [class~="bg-[#0E0807]"] { background-color: var(--color-bg-surface); }
+[class~="bg-[#1A1412]"], [class~="bg-[#16100E]"] { background-color: var(--color-bg-card); }
+[class~="border-[#2D2421]"], [class~="border-[#2A1F1C]"], [class~="border-[#2B1F1C]"], [class~="border-[#2E201C]"] { border-color: var(--color-border); }
+[class~="bg-[#CC0000]"] { background-color: var(--color-accent-red); }
+[class~="text-[#CC0000]"], [class~="text-[#FF4444]"] { color: #f07879; }
+[class~="border-[#CC0000]"] { border-color: var(--color-accent-red); }
+[class*="from-[#"] { background-image: linear-gradient(125deg, #20252d, #13171d); }
+[class*="shadow-red-"] { --tw-shadow-color: transparent; }
+[class~="shadow-xl"], [class~="shadow-2xl"], [class~="shadow-md"], [class~="shadow-lg"] { box-shadow: none; }
+[class~="text-zinc-400"] { color: var(--muted); }
+[class~="text-zinc-500"] { color: #929ba8; }
+[class~="text-zinc-600"] { color: #808b9b; }
+[class~="uppercase"] { text-transform: none; }
+[class~="tracking-wider"], [class~="tracking-widest"] { letter-spacing: .025em; }
+[class~="text-[9px]"], [class~="text-[10px]"] { font-size: 11px; line-height: 1.5; }
+[class~="text-[11px]"] { font-size: 12px; line-height: 1.6; }
+[class~="text-xs"] { font-size: 13px; line-height: 1.6; }
+[class~="font-bold"] { font-weight: 650; }
+h1, h2, h3 { text-wrap: balance; }
+h1 { letter-spacing: -.045em; }
+h2, h3 { letter-spacing: -.02em; }
+p { text-wrap: pretty; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select { border-color: #343c48; background-color: #11151b; border-radius: 13px; font-size: 14px; color: #f1f3f6; }
+input::placeholder, textarea::placeholder { color: #8a94a2; opacity: 1; }
+input:focus, textarea:focus, select:focus { border-color: #e34748; box-shadow: 0 0 0 3px #e3474815; }
+input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #e34748; }
+button[class~="bg-[#CC0000]"], a[class~="bg-[#CC0000]"] { min-height: 46px; border: 1px solid #ff83832a; background: #dc4244; color: white; font-weight: 650; letter-spacing: 0; box-shadow: 0 4px 14px #0002; }
+button[class~="bg-[#CC0000]"]:hover:not(:disabled), a[class~="bg-[#CC0000]"]:hover { background: #eb5355; }
+button[class~="bg-[#CC0000]"]:active:not(:disabled), a[class~="bg-[#CC0000]"]:active { transform: translateY(1px); }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+/* Responsive application shell and floating navigation. */
+#app-container { max-width: 1120px; background: var(--color-bg-app); border: 0; padding-bottom: 104px; }
+#app-top-header { height: 82px; padding: 0 28px; background: #0b0d10e8; backdrop-filter: blur(20px); border-bottom: 1px solid #ffffff0d; }
+#app-top-header h1 { font-size: 14px; letter-spacing: -.03em; }
+#app-top-header h1 span { color: #a4adb9; }
+#app-top-header > div:first-child > div:first-child { width: 38px; height: 38px; border-radius: 12px; background: #e34748; box-shadow: inset 0 1px 0 #ffffff30; }
+#top-profile-chip { min-height: 38px; padding: 6px 12px; background: #171b21; }
+#app-container > div.flex-1 { padding: 30px 28px; }
+#bottom-navigation { left: 50%; right: auto; bottom: 18px; transform: translateX(-50%); width: min(620px, calc(100% - 28px)); border: 1px solid #ffffff14; border-radius: 22px; background: #181c22f0; backdrop-filter: blur(24px); box-shadow: 0 12px 48px #0007; padding-bottom: env(safe-area-inset-bottom, 0px); }
+#bottom-navigation > div { max-width: none; gap: 4px; padding: 7px; }
+#bottom-navigation button { min-height: 58px; border-radius: 16px; border-color: transparent; gap: 3px; }
+#bottom-navigation button[class~="text-[#CC0000]"] { background: #e3474817; border-color: #e3474825; }
+#bottom-navigation button span { font-size: 10px; letter-spacing: 0; font-weight: 550; }
+#bottom-navigation button svg { width: 19px; height: 19px; }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+/* Home, exercise library and member content. */
+#home-view { display: grid; gap: 24px; }
+#home-view > * { margin: 0; }
+#home-view > div:first-child { position: relative; overflow: hidden; padding: 34px; border-radius: 24px; border-color: #ffffff0e; background: radial-gradient(ellipse at 100% 0%, #e3474814, transparent 58%), linear-gradient(125deg, #1c222a, #13171d); }
+#home-view > div:first-child h1 { max-width: 620px; margin-top: 22px; font-size: clamp(28px, 4vw, 44px); font-weight: 650; line-height: 1.12; }
+#home-view > div:first-child p { max-width: 520px; font-size: 14px; line-height: 1.8; }
+#home-view > div:first-child p:last-child { font-size: 11px; color: #949eac; padding-top: 6px; }
+#home-view > div:nth-child(2) { gap: 14px; }
+[id^="metric-card-"] { padding: 24px 16px; border-radius: 18px; text-align: left; background: #14181e; border-color: #ffffff0e; }
+[id^="metric-card-"] > span:first-child { font: 550 34px/1.2 'Plus Jakarta Sans', sans-serif; letter-spacing: -.05em; }
+[id^="metric-card-"] > span:last-child { margin-top: 8px; font-size: 12px; color: #a2aab6; font-weight: 500; }
+#home-view > div:nth-child(3), #home-view > div:nth-child(4) { padding: 26px; border-radius: 20px; background: #13171d; border-color: #ffffff0e; }
+#home-view label { font-size: 13px; color: #c1c7d0; font-weight: 600; }
+#home-search-input { min-height: 56px; padding-right: 84px; }
+#home-search-button { top: 7px; right: 7px; min-height: 42px; padding-inline: 16px; border-radius: 10px; }
+#btn-view-all-categories { font-size: 12px; min-height: 36px; }
+[id^="group-btn-"] { min-height: 92px; padding: 18px; border-radius: 15px; background: #1b2027; border-color: #ffffff08; gap: 14px; }
+[id^="group-btn-"] > div:first-child { width: 48px; height: 48px; background: #10151b; border: 0; border-radius: 14px; }
+[id^="group-btn-"] span:first-child { font-size: 14px; font-weight: 600; }
+[id^="group-btn-"]:hover, [id^="exercise-item-"]:hover, [id^="member-product-card-"]:hover { background-color: #222932; border-color: #e3474866; }
+#exercises-view > div:first-child h1, #contents-view h1, #profile-view h1, #members-area-view h1, #exercise-detail-view h1, #content-detail-view h1 { font-size: clamp(26px, 3.2vw, 34px); font-weight: 600; line-height: 1.2; }
+#exercise-search-input { min-height: 54px; }
+[id^="chip-category-"] { min-width: 94px; padding: 13px 10px; border-radius: 16px; background: #161b22; border-color: #ffffff0b; opacity: 1; }
+[id^="chip-category-"][data-active="true"] { background: #e3474814; border-color: #e3474870; box-shadow: none; transform: none; }
+[id^="chip-category-"] .animate-ping { animation: none; width: 5px; height: 5px; }
+[id^="exercise-item-"] { min-height: 84px; padding: 17px; border-radius: 16px; background: #151a21; border-color: #ffffff0b; }
+[id^="exercise-item-"] h3 { font-size: 14px; font-weight: 550; }
+[id^="exercise-item-"] > div:first-child > div:first-child { width: 46px; height: 46px; border: 0; background: #0e1319; border-radius: 12px; }
+#contents-view > div, #profile-view > div, #content-detail-view > div, #exercise-detail-view > div, #members-area-view > div:first-child { border-radius: 20px; }
+#contents-view > div[class~="border"], #profile-view > div[class~="border"], #members-area-view > div:first-child { padding: 25px; }
+[id^="material-row-"], [id^="member-product-card-"] { padding: 22px; border-radius: 18px; border-color: #ffffff0e; background: #161b22; }
+[id^="member-product-logo-"] { width: 76px; height: 76px; border-radius: 16px; }
+#card-entry-montador-treinos { border: 1px solid #e3474833; background: linear-gradient(120deg, #25232b, #171c23); padding: 28px; }
+#profile-user-avatar { box-shadow: 0 0 0 6px #ffffff05; }
 
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
+/* Auth: editorial introduction and a focused sign-in panel. */
+#login-container { width: min(1060px, calc(100% - 64px)); max-width: none; min-height: min(740px, calc(100svh - 80px)); margin: 40px auto; display: grid; grid-template-columns: 1.1fr 1fr; align-content: center; gap: 30px 64px; padding: 52px; border: 1px solid #ffffff10; border-radius: 32px; background: radial-gradient(ellipse at 0% 0%, #e3474810, transparent 50%), #11151b; box-shadow: 0 30px 90px #0004; }
+#login-container > div:first-child { grid-column: 1; grid-row: 1 / 3; padding: 0; }
+#login-container > div:nth-child(2) { grid-column: 2; grid-row: 1; align-self: center; padding: 30px; border: 1px solid #ffffff0e; border-radius: 22px; background: #1a1f27; }
+#login-container > div:last-child { grid-column: 2; grid-row: 2; padding: 0 12px; }
+#login-container > div:first-child > div:first-child { margin-bottom: 64px; gap: 13px; }
+#login-container > div:first-child > div:first-child > div:first-child { width: 46px; height: 46px; border-radius: 14px; background: #e34748; font-size: 24px; }
+#login-container h1 { font-size: 14px; }
+#login-container h1 span { color: #a2aab6; }
+#login-container h2 { font-size: clamp(32px, 4vw, 46px); line-height: 1.13; font-weight: 600; letter-spacing: -.055em; max-width: 330px; }
+#login-container > div:first-child > div:nth-child(2) p { font-size: 14px; line-height: 1.85; margin-top: 18px; max-width: 350px; }
+#login-container > div:first-child > div:last-child { margin-top: 34px; padding: 0; background: transparent; border: 0; border-radius: 0; }
+#login-container > div:first-child > div:last-child > div { padding-block: 12px; gap: 14px; }
+#login-container > div:first-child > div:last-child > div > div:first-child { width: 40px; height: 40px; border-radius: 12px; background: #20262e; border-color: #ffffff08; }
+#login-container h3 { font-size: 13px; font-weight: 600; }
+#login-container label { color: #d1d6df; font-size: 12px; letter-spacing: 0; font-weight: 550; }
+#login-container input { min-height: 52px; font-size: 16px; margin-top: 7px; }
+#login-container form button { min-height: 50px; margin-top: 8px; }
+#btn-login-google { min-height: 50px; border-radius: 13px; background: #252c36; border-color: #ffffff15; font-size: 13px; }
+#btn-login-google:hover { background: #303946; border-color: #ffffff30; }
+#login-container > div:last-child p { font-size: 11px; line-height: 1.7; }
 
-::-webkit-scrollbar-track {
-  background: #120907;
-}
+/* Dialog and workout presentation. */
+[id$="modal-overlay"], #material-reader-overlay { background: #05080dd9; backdrop-filter: blur(9px); padding: 18px; }
+#feedback-modal, #demonstration-modal, #material-reader-modal { border-color: #ffffff1a; border-radius: 24px; background: #171c23; box-shadow: 0 24px 90px #0008; }
+#feedback-modal input, #feedback-modal textarea, #feedback-modal select { min-height: 46px; }
+#feedback-modal textarea { min-height: 130px; }
+[id^="workout-builder-"] h1 { font-size: clamp(26px, 3vw, 34px); font-weight: 600; }
+[id^="workout-builder-"] > div[class~="border"] { padding: 24px; border-radius: 20px; }
+[id^="workout-builder-"] button[class~="border"] { border-radius: 13px; min-height: 44px; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #101318; }
+::-webkit-scrollbar-thumb { background: #343c48; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #536073; }
 
-::-webkit-scrollbar-thumb {
-  background: #2d2421;
-  border-radius: 9999px;
+@media (min-width: 800px) {
+  #home-view > div:nth-child(4) > div:last-child { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  #home-view [id^="group-btn-"] { flex-direction: column; align-items: flex-start; gap: 18px; padding: 22px; min-height: 150px; }
+  #exercises-view > div:last-child > div:has(> [id^="exercise-item-"]) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  #exercises-view [id^="exercise-item-"] { margin: 0; min-width: 0; }
+  #members-area-view > div:last-child > div:last-child { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  [id^="member-product-card-"] { margin: 0; display: flex; flex-direction: column; justify-content: space-between; }
+  #members-area-view h3 { font-size: 15px; }
 }
+@media (max-width: 799px) {
+  #app-top-header { height: 72px; padding-inline: 20px; }
+  #app-container > div.flex-1 { padding: 24px 20px; }
+  #login-container { width: min(510px, calc(100% - 32px)); margin: 20px auto; padding: 30px; gap: 28px; grid-template-columns: 1fr; min-height: calc(100svh - 40px); border-radius: 24px; }
+  #login-container > div:first-child, #login-container > div:nth-child(2), #login-container > div:last-child { grid-column: auto; grid-row: auto; }
+  #login-container > div:first-child > div:first-child { margin-bottom: 36px; }
+  #login-container h2 { max-width: none; font-size: 36px; }
+  #login-container > div:first-child > div:nth-child(2) p { max-width: none; }
+  #login-container > div:first-child > div:last-child { margin-top: 22px; }
+  #login-container > div:nth-child(2) { padding: 22px; }
+  #home-view > div:first-child { padding: 26px; }
+  #home-view > div:nth-child(3), #home-view > div:nth-child(4) { padding: 22px; }
+}
+@media (max-width: 420px) {
+  #app-top-header { padding-inline: 16px; }
+  #app-top-header h1 { max-width: 170px; font-size: 12px; }
+  #app-container > div.flex-1 { padding: 20px 16px; }
+  #home-view { gap: 18px; }
+  #home-view > div:first-child, #home-view > div:nth-child(3), #home-view > div:nth-child(4) { padding: 20px; }
+  #home-view > div:first-child > div:first-child { align-items: flex-start; gap: 10px; }
+  #home-view > div:first-child > div:first-child > span { max-width: 160px; }
+  [id^="metric-card-"] { padding: 19px 14px; }
+  [id^="metric-card-"] > span:first-child { font-size: 29px; }
+  [id^="group-btn-"] { padding: 12px; gap: 9px; }
+  [id^="group-btn-"] > div:first-child { width: 36px; height: 42px; }
+  [id^="group-btn-"] span:first-child { font-size: 12px; }
+  [id^="group-btn-"] span:last-child { font-size: 10px; }
+  #bottom-navigation { width: calc(100% - 20px); bottom: 10px; border-radius: 19px; }
+  #bottom-navigation button span { font-size: 9px; }
+  #login-container { padding: 22px; }
+  #login-container > div:nth-child(2) { padding: 20px; }
+  #login-container h2 { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+/* Long muscle names remain readable in the compact category cards. */
+[id^="group-btn-"] span:first-child { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.45; }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #4a3c37;
-}
+/* Original supplied brand artwork, shown in full without cropping. */
+.app-brand-logo { display: block; width: 64px; height: 64px; flex-shrink: 0; object-fit: contain; background: #050505; border-radius: 12px; }
+#login-container > div:first-child > div:first-child > .app-brand-logo { width: 88px; height: 88px; border-radius: 16px; }
+#app-top-header .app-brand-logo { width: 52px; height: 52px; border-radius: 10px; }
+#app-container > div.flex-1 .app-brand-logo, .app-brand-logo.mx-auto { margin-inline: auto; }
+div.text-center > .app-brand-logo { margin-inline: auto; width: 80px; height: 80px; }
+@media (max-width: 420px) { #login-container > div:first-child > div:first-child > .app-brand-logo { width: 72px; height: 72px; } #app-top-header .app-brand-logo { width: 46px; height: 46px; } }
